@@ -1,0 +1,20 @@
+const char DEFAULT_SERVER_IP[] = "localhost"
+const int DEFAULT_SERVER_PORT = 8008
+
+
+component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTTPRequest request, time.Timer timer, data.IntUtil iu, hillClimbing hc{
+
+	int App:main(AppParam params[])
+		{
+		
+			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
+			
+			
+			hc.call(restAPI, 0)
+
+	
+			
+			return 0
+		}
+
+}
