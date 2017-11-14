@@ -6,8 +6,8 @@ component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTT
 
 	int App:main(AppParam params[])
 		{
-		
-			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
+			//Creates the a restAPI to drive the web server
+			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT) 
 			
 			
 			hc.call(restAPI, 0)
