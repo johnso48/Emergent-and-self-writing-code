@@ -1,0 +1,6 @@
+uses pal.control.RestAPI
+interface hillClimbing{
+
+	int call(RestAPI restAPI, int startNode)
+		
+}
