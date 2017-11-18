@@ -4,9 +4,9 @@ const int DEFAULT_SERVER_PORT = 8008
 const int ITERATION_COUNT = 3
 const int STAT_INTERVAL = 5000
 
-component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, time.DateUtil du, net.http.HTTPRequest request, time.Timer timer, data.IntUtil iu, io.Output out, data.StringUtil su, io.File, data.ByteUtil bu,  data.adt.List, util.RandomInt ru, time.Calendar cal{
+uses pal.control.RestAPI
+component provides hillClimbing requires webDriver drive, io.Output out, data.IntUtil iu{
 	
-<<<<<<< HEAD
 	int hillClimbing:call(RestAPI restAPI, int startNode)
 		{
 <<<<<<< HEAD
@@ -34,28 +34,9 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 				nextNode = 0
 				
 				for (int i = 0; i < 2; i++)
-=======
-	void hillClimbing:call(RestAPI restAPI, bool restart)
-		{
-			bool read = 0
-			int averageReward = 0
-			String configs[] = restAPI.getConfigs()
-			File f
-			int i = 0
-			int j = 0
-			int end
-			if (restart)
-			{
-				for (i = 0; i < configs.arrayLength; i++)
->>>>>>> parent of 86e8bed... Updated the algorthim
 				{
-					out.println("Switching configs")
-					out.println(configs[i].string)
-					restAPI.setConfig(configs[i].string)
-					
-					for (j = 0; j < ITERATION_COUNT; j++)
+					if (neighbors[i] >= 0)
 					{
-<<<<<<< HEAD
 <<<<<<< HEAD
 						if (neighbors[i] < maxNode)
 						{
@@ -89,27 +70,6 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 						//Code for searching for the word "Value"
 						for (int k = 0; k < response.arrayLength; k++)
 						{
-=======
-						//get perception data
-						timer.sleep(STAT_INTERVAL)
-						
-						HTTPResponse r = request.get("http://$DEFAULT_SERVER_IP:$(iu.intToString(DEFAULT_SERVER_PORT))/meta/get_perception", null)
-						
-						char response[] = r.content
-						char strTest[] = new char[5]
-						strTest[0] = "9"
-						strTest[1] = "a"
-						strTest[2] = "a"
-						strTest[3] = "a"
-						strTest[4] = "a"
-						
-						int start
-						
-						char reward[]
-
-						for (int k = 0; k < response.arrayLength; k++)
-						{
->>>>>>> parent of 86e8bed... Updated the algorthim
 							strTest[0] = strTest[1]
 							strTest[1] = strTest[2]
 							strTest[2] = strTest[3]
@@ -121,10 +81,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 								{
 									start = k + 5
 									end = 1
-<<<<<<< HEAD
 									//Code for reading the number associated with the word value
-=======
->>>>>>> parent of 86e8bed... Updated the algorthim
 									while(1)
 									{
 										reward = su.subString(response, start, end)
@@ -150,10 +107,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 					out.print(iu.intToString(i))
 					out.print(", Average reward: ")
 					out.print(iu.intToString((averageReward/ITERATION_COUNT)))
-<<<<<<< HEAD
 					//Writes the results to a text file which can be read later on
-=======
->>>>>>> parent of 86e8bed... Updated the algorthim
 					f = new File("server_rewards.txt", File.FILE_ACCESS_WRITE)
 					f.setPos(f.getSize())
 					f.write(iu.intToString(i))
@@ -176,10 +130,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 			j = 0
 			end = 1
 			char reward[]
-<<<<<<< HEAD
 			//Code for reading the contents of a stored textfile
-=======
->>>>>>> parent of 86e8bed... Updated the algorthim
 			while(1)
 			{
 				if (fileContents[i] == ",")
@@ -191,7 +142,6 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 							break
 						}else{
 							end++
-<<<<<<< HEAD
 >>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca
 						}
 					}		
@@ -214,122 +164,12 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 				
 				if (rewardValue[bestNode] > rewardValue[i])
 >>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca
-=======
-						}
-					}
-					reward = su.subString(fileContents, (i+2), end-1)
-					rewardValue[j] = iu.intFromString(reward)
-					j++
-					reward = ""
-					end = 1
-				}
-				i = i + 1
-				if (i == fileContents.arrayLength)
->>>>>>> parent of 86e8bed... Updated the algorthim
 				{
-					break
+					return currentNode
 				}
-<<<<<<< HEAD
 				currentNode = nextNode
 				out.print("Moving to node ")
 				out.println(iu.intToString(currentNode))
-=======
-			}
-			int bestNode = 0
-			out.println("")
-			i = 0
-
-			for (i = 0; i < configs.arrayLength; i++)
-			{
-				
-				if (rewardValue[bestNode] > rewardValue[i])
-				{
-					if (rewardValue[i] != 0)
-					{
-						bestNode = i
-						//out.print(bestNode)
-					}
-					
-				}
-			}
-			out.println(iu.intToString(bestNode))
-			
-			int nextNode = 0
-			ru.setSeed(du.toMilliseconds(cal.getTime()))
-			while(1)
-			{
-				nextNode = ru.get((configs.arrayLength - 1))
-				out.println(iu.intToString(nextNode))
-				out.print("Switching configs to node ")
-				out.println(iu.intToString(bestNode))
-				out.println(configs[bestNode].string)
-				restAPI.setConfig(configs[bestNode].string)	
-				for (j = 0; j < ITERATION_COUNT; j++)
-				{
-					//get perception data
-					timer.sleep(STAT_INTERVAL)
-						
-					HTTPResponse r = request.get("http://$DEFAULT_SERVER_IP:$(iu.intToString(DEFAULT_SERVER_PORT))/meta/get_perception", null)
-						
-					char response[] = r.content
-					char strTest[] = new char[5]
-					strTest[0] = "9"
-					strTest[1] = "a"
-					strTest[2] = "a"
-					strTest[3] = "a"
-					strTest[4] = "a"
-					out.println(response)	
-					int start
-
-
-					for (int k = 0; k < response.arrayLength; k++)
-					{
-						strTest[0] = strTest[1]
-						strTest[1] = strTest[2]
-						strTest[2] = strTest[3]
-						strTest[3] = strTest[4]
-						strTest[4] = response[k]
-						if (strTest == "value")
-						{	
-							if (!read)
-							{
-								start = k + 5
-								end = 1
-								while(1)
-								{
-									reward = su.subString(response, start, end)
-									if (reward[(reward.arrayLength) - 1] == ","){
-										break
-									}else{
-										end++
-									}
-								}
-								reward = su.subString(response, start, end - 1)
-								out.println(reward)
-								averageReward = averageReward + iu.intFromString(reward)
-								read = 1
-							}
-						}
-					}
-					out.println("")
-					read = 0
-					rewardValue[bestNode] = averageReward
-					out.println(iu.intToString(averageReward))
-					if (averageReward >= rewardValue[nextNode])
-					{
-						if (rewardValue[nextNode] != 0)
-						{
-							bestNode = nextNode
-						}	
-					}
-					
-					if (averageReward == 0)
-					{
-						bestNode = nextNode
-					}
-					averageReward = 0
-				}
->>>>>>> parent of 86e8bed... Updated the algorthim
 			}
 			
 <<<<<<< HEAD
