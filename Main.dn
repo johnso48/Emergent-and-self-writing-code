@@ -6,6 +6,7 @@ component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTT
 
 	int App:main(AppParam params[])
 		{
+<<<<<<< HEAD
 <<<<<<< HEAD:Mainprogram/Main.dn
 			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
 			ri.setSeed(du.toMilliseconds(cal.getTime()))
@@ -18,6 +19,10 @@ component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTT
 			//Creates the a restAPI to drive the web server
 			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT) 
 >>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca:Main.dn
+=======
+			//Creates the a restAPI to drive the web server
+			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT) 
+>>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca
 			
 			
 			return 0
@@ -27,4 +32,7 @@ component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTT
 =======
 
 }
+<<<<<<< HEAD
 >>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca:Main.dn
+=======
+>>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca
