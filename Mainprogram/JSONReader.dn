@@ -6,7 +6,10 @@ component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil 
 		jsonResponse = jsonp.getValue(jsonResponse, "metrics")
 		jsonResponse = jsonResponse.children[0]
 		jsonResponse = jsonResponse.children[2]
-
+		
+		
+		
+		
 		int reward = iu.intFromString(jsonResponse.value)
 		
 		

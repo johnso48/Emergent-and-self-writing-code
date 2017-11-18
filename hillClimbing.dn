@@ -7,7 +7,11 @@ const int STAT_INTERVAL = 5000
 component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, time.DateUtil du, net.http.HTTPRequest request, time.Timer timer, data.IntUtil iu, io.Output out, data.StringUtil su, io.File, data.ByteUtil bu,  data.adt.List, util.RandomInt ru, time.Calendar cal{
 	
 <<<<<<< HEAD
+<<<<<<< HEAD
 	int hillClimbing:call(RestAPI restAPI, int startNode)
+=======
+	void hillClimbing:call(RestAPI restAPI, int startNode)
+>>>>>>> parent of a110e41... New update
 		{
 <<<<<<< HEAD
 			int currentNode = startNode
@@ -30,7 +34,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 			{
 				neighbors[0] = currentNode - 1
 				neighbors[1] = currentNode + 1
-				nextEval = 9999999
+				nextEval = 999999999999999
 				nextNode = 0
 				
 				for (int i = 0; i < 2; i++)
@@ -59,11 +63,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 <<<<<<< HEAD
 						if (neighbors[i] < maxNode)
 						{
-							out.print("Testing node ")
-							out.println(iu.intToString(neighbors[i]))
 							response = drive.getResponse(restAPI, neighbors[i])
-							out.print("Response Recieved ")
-							out.println(iu.intToString(response))
 							if (response < nextEval)
 							{
 								nextNode = neighbors[i]
@@ -197,6 +197,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 					}		
 				}
 <<<<<<< HEAD
+<<<<<<< HEAD
 				out.print("Testing node ")
 				out.println(iu.intToString(currentNode))
 				response = drive.getResponse(restAPI, currentNode)
@@ -226,6 +227,10 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 				i = i + 1
 				if (i == fileContents.arrayLength)
 >>>>>>> parent of 86e8bed... Updated the algorthim
+=======
+			
+				if (nextEval >= drive.getResponse(restAPI, currentNode))
+>>>>>>> parent of a110e41... New update
 				{
 					break
 				}
@@ -233,6 +238,7 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 				currentNode = nextNode
 				out.print("Moving to node ")
 				out.println(iu.intToString(currentNode))
+<<<<<<< HEAD
 =======
 			}
 			int bestNode = 0
@@ -417,6 +423,10 @@ component provides hillClimbing requires net.TCPSocket, pal.control.RestAPI, tim
 				}
 			}
 >>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca
+=======
+				
+			}
+>>>>>>> parent of a110e41... New update
 		}
 	}
 					

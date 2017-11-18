@@ -1,0 +1,11 @@
+uses pal.control.RestAPI
+interface hillClimbing{
+	
+<<<<<<< HEAD:Mainprogram/resources/hillClimbing.dn
+	void call(RestAPI restAPI, bool restart)
+=======
+	void call(RestAPI restAPI, int startNode)
+>>>>>>> parent of a110e41... New update:resources/hillClimbing.dn
+	
+	
+}
