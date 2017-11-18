@@ -2,16 +2,29 @@ const char DEFAULT_SERVER_IP[] = "localhost"
 const int DEFAULT_SERVER_PORT = 8008
 
 
-component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTTPRequest request, time.Timer timer, data.IntUtil iu, hillClimbing hc, io.Output out{
+component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTTPRequest request, time.Timer timer, data.IntUtil iu, hillClimbing hc, io.Output out, util.RandomInt ri, time.DateUtil du, time.Calendar cal{
 
 	int App:main(AppParam params[])
 		{
-		
+<<<<<<< HEAD:Mainprogram/Main.dn
 			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
+			ri.setSeed(du.toMilliseconds(cal.getTime()))
+			int maxNode = restAPI.getConfigs().arrayLength
+			while(1)
+			{
+				out.println(iu.intToString(hc.call(restAPI, ri.get(maxNode))))
+			}
+=======
+			//Creates the a restAPI to drive the web server
+			RestAPI restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT) 
+>>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca:Main.dn
 			
-			
-			out.println(hc.call(restAPI, 5))
 			
 			return 0
 		}
+<<<<<<< HEAD:Mainprogram/Main.dn
 }
+=======
+
+}
+>>>>>>> c82fa842e31a9838294ec4fb01f2b714fd6a29ca:Main.dn

@@ -7,7 +7,7 @@ const int STAT_INTERVAL = 5000
 uses pal.control.RestAPI
 component provides hillClimbing requires webDriver drive, io.Output out, data.IntUtil iu{
 	
-	void hillClimbing:call(RestAPI restAPI, int startNode)
+	int hillClimbing:call(RestAPI restAPI, int startNode)
 		{
 			int currentNode = startNode
 			int neighbors[2]
@@ -19,7 +19,7 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 			{
 				neighbors[0] = currentNode - 1
 				neighbors[1] = currentNode + 1
-				nextEval = 999999999999999
+				nextEval = 9999999
 				nextNode = 0
 				
 				for (int i = 0; i < 2; i++)
@@ -28,7 +28,11 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 					{
 						if (neighbors[i] < maxNode)
 						{
+							out.print("Testing node ")
+							out.println(iu.intToString(neighbors[i]))
 							response = drive.getResponse(restAPI, neighbors[i])
+							out.print("Response Recieved ")
+							out.println(iu.intToString(response))
 							if (response < nextEval)
 							{
 								nextNode = neighbors[i]
@@ -37,16 +41,22 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 						}
 					}		
 				}
-			
-				if (nextEval >= drive.getResponse(restAPI, currentNode))
+				out.print("Testing node ")
+				out.println(iu.intToString(currentNode))
+				response = drive.getResponse(restAPI, currentNode)
+				out.print("Response Recieved ")
+				out.println(iu.intToString(response))
+				if (nextEval >= response)
 				{
 					return currentNode
 				}
 				currentNode = nextNode
 				out.print("Moving to node ")
 				out.println(iu.intToString(currentNode))
-				
 			}
+			
+			return 0
+			
 		}
 	}
 					
