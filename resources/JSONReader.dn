@@ -1,0 +1,4 @@
+interface JSONReader{
+
+	int getReward(char webResponse[])
+}

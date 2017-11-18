@@ -1,7 +1,7 @@
 uses pal.control.RestAPI
 interface hillClimbing{
 	
-	void call(RestAPI restAPI, bool restart)
+	void call(RestAPI restAPI, int startNode)
 	
 	
 }

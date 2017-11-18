@@ -1,0 +1,18 @@
+component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil iu, io.Output out{
+
+	int JSONReader:getReward(char webResponse[])
+	{
+		JSONElement jsonResponse = jsonp.parseDocument(webResponse)
+		jsonResponse = jsonp.getValue(jsonResponse, "metrics")
+		jsonResponse = jsonResponse.children[0]
+		jsonResponse = jsonResponse.children[2]
+		
+		
+		
+		
+		int reward = iu.intFromString(jsonResponse.value)
+		
+		
+		return reward
+	}
+}

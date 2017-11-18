@@ -1,0 +1,6 @@
+uses pal.control.RestAPI
+interface webDriver{
+	
+	int getResponse(RestAPI restAPI, int configNum)
+		
+}
