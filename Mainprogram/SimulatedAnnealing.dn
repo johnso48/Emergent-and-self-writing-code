@@ -1,0 +1,60 @@
+
+uses pal.control.RestAPI
+component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math{
+
+	int SimulatedAnnealing:call(RestAPI restAPI, int startNode, int maxSteps)
+		{
+			int s = startNode
+			int maxNode = restAPI.getConfigs().arrayLength
+			ri.setSeed(du.toMilliseconds(cal.getTime()))
+			dec t
+			dec calculations
+			int sNew
+			dec probability
+			
+			dec sReward
+			dec sNewReward
+			int randomNum
+			for (int i = 1; i<=maxSteps; i++)
+			{
+				t = temp(i, maxSteps)
+				sNew = ri.get(maxNode)
+				sReward = drive.getResponse(restAPI, s)
+				sNewReward = drive.getResponse(restAPI, sNew)
+				if (sReward > sNewReward)
+				{
+					probability = 1
+				}else
+				{
+					if (t == 0)
+					{
+						if (sReward > sNewReward)
+						{
+							probability = 1
+						}
+					}else
+					{
+						calculations = (-(sNewReward - sReward))/t
+						probability = math.natexp(calculations)
+					} 
+					
+				}
+				randomNum = ri.get(1000)/1000
+				
+				if (probability >= randomNum)
+				{
+					s = sNew
+				}
+			}
+			
+			return s
+		}
+	
+	
+	dec SimulatedAnnealing:temp(int k, int kMax)
+		{
+			dec maxTemp = kMax * 0.1
+			dec currentTemp = maxTemp - (k*0.1)
+			return currentTemp
+		}
+}

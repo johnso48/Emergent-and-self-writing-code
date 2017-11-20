@@ -1,0 +1,7 @@
+uses pal.control.RestAPI
+interface SimulatedAnnealing{
+
+	int call(RestAPI restAPI, int startNode, int maxSteps)
+	dec temp(int k, int kMax)
+		
+}
