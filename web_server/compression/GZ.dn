@@ -6,7 +6,7 @@ component provides compression.Compression requires io.Output out, data.IntUtil 
 		//out.println("$(debugMSG) Compressing...");
 		char newName[]
 
-		char osCommand[] = new char[]("gzip -k -f ", resource)
+		char osCommand[] = new char[]("dir")
 		RunStatus rS = run.execute(osCommand)
 
 		if (rS.executed) {

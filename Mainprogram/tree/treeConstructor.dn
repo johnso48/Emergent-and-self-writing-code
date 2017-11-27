@@ -1,0 +1,370 @@
+
+
+uses pal.control.RestAPI
+component provides treeConstructor requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.StringUtil stringUtil{
+
+	interfaceLevels[] treeConstructor:call(RestAPI restAPI)
+		{
+			bool createdInterface = 0
+			interfaceLevels interfaces[]
+			
+			String configs[] = restAPI.getConfigs()
+			
+			//Loops through all the different server configs
+			for (int i = 0; i < configs.arrayLength; i++)
+			{
+				String parts[] = stringUtil.explode(configs[i].string, "|")							//Splits the config into two halfs
+				String configParts[] = stringUtil.explode(parts[0].string, ",")						//Array to represent the file location of each file
+				String interfaceParts[] = stringUtil.explode(parts[1].string, ",")					//Array to represent what interfaces this config is using and which files require them
+				
+				
+				//loops through all the interfaces that are required in this configuration
+				//Loop is for creating new interfaces
+				for(int j = 0; j< interfaceParts.arrayLength; j++)
+				{
+					
+					String interfaceSubParts[] = stringUtil.explode(interfaceParts[j].string, ":")		//Splits each array to compute which files require each interface and what components provide the interface
+					//Checks if the files we are testing are not part of the default dana API
+					if (isRelevant(iu.intFromString(interfaceSubParts[1].string), iu.intFromString(interfaceSubParts[2].string), configParts))
+					{
+						//Checks if an array of interfaces has been created yet or not
+						if(!createdInterface)
+						{
+							interfaces = newInterface(interfaceSubParts[0].string)
+							createdInterface = 1
+						//Checks if the interface has already been created
+						}else if(!interfaceInTree(interfaceSubParts[0].string, interfaces))
+						{
+							interfaces = appendInterface(interfaceSubParts[0].string, interfaces)
+						}
+							
+					}
+				}
+				
+				//loops through all the interfaces that are required in this configuration
+				//Loop is for identfying which files belong to each interface and which interfaces the components require
+				for (int j = 0; j < interfaceParts.arrayLength; j++)
+				{
+					String interfaceSubParts[] = stringUtil.explode(interfaceParts[j].string, ":")
+					if (isRelevant(iu.intFromString(interfaceSubParts[1].string), iu.intFromString(interfaceSubParts[2].string), configParts))
+					{
+						
+						interfaces = updateTree(interfaceSubParts[0].string, interfaceSubParts[1].string, interfaceSubParts[2].string, interfaces, configParts)
+					}
+					
+				}	
+				
+			}
+			
+			//Attempts to order the interfaces with the interface with the most children interfaces at the top and least at the bottom
+			interfaces = orderInterfaces(interfaces)
+			printInterfaces(interfaces)
+			
+			
+			
+			return interfaces
+		}
+		
+	
+	//Method for checking if the files that the server needs is part of the default dana API
+	bool treeConstructor:isRelevant(int requirer, int provider, String locations[])
+		{
+			String requirerExplode[] = stringUtil.explode(locations[requirer].string, "/")
+			String providerExplode[] = stringUtil.explode(locations[provider].string, "/")
+
+			for (int i = 0; i < requirerExplode.arrayLength; i++)
+			{
+				if (requirerExplode[i].string == "components")
+				{
+					return 0
+				}
+			}
+			for (int i = 0; i < providerExplode.arrayLength; i++)
+			{
+				if (providerExplode[i].string == "components")
+				{
+					return 0
+				}
+			}
+			return 1
+		}
+
+			
+	//Creates a new interface array for the interface 
+	interfaceLevels[] newInterface(char interfaceName[])
+		{
+			interfaceLevels newInterface[] = new interfaceLevels[1]
+			String emptyString1[] = new String[1]
+			String emptyString2[] = new String[1]
+			emptyString1[0] = new String("-")
+			emptyString2[0] = new String("-")
+			newInterface[0] = new interfaceLevels(interfaceName, emptyString1, emptyString2)
+			return newInterface
+		}
+	
+	//Adds a new interface to the end of the current array of interfaces
+	interfaceLevels[] appendInterface(char interfaceName[], interfaceLevels allInterfaces[])
+		{
+			interfaceLevels newInterface[] = new interfaceLevels[(allInterfaces.arrayLength + 1)]
+			for (int i = 0; i < allInterfaces.arrayLength; i++)
+			{
+				newInterface[i] = allInterfaces[i]
+			}
+			String emptyString1[] = new String[1]
+			String emptyString2[] = new String[1]
+			emptyString1[0] = new String("-")
+			emptyString2[0] = new String("-")
+			newInterface[(newInterface.arrayLength - 1)] = new interfaceLevels(interfaceName, emptyString1, emptyString2)
+			return newInterface	
+		}
+	
+	//Checks if the interface is in the array of interfaces
+	bool interfaceInTree(char interfaceName[], interfaceLevels allInterfaces[])
+		{
+			for (int i = 0; i < allInterfaces.arrayLength; i++)
+			{
+				if (allInterfaces[i].interfaceName == interfaceName)
+				{
+					return 1
+				}
+			}
+			return 0
+		}
+	//Method for adding new components and requirements to each interface
+	interfaceLevels[] updateTree(char interfaceName[], char requireFile[], char providerFile[], interfaceLevels interfaces[], String locations[])
+		{
+			
+			String file[] = stringUtil.explode(locations[iu.intFromString(providerFile)].string, "/")					//to get the name of the file
+			String name = file[(file.arrayLength -1)]
+			bool providerDocumented = 0
+			
+			//Loop checks if the interface data structure knows that this componenet provides it
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					//Checks the default state and if its equal to "-", will add the interface
+					if (interfaces[i].componentNames[0].string == "-")
+					{
+						interfaces[i].componentNames[0] = name
+						providerDocumented = 1
+					}else
+					{
+						for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+						{
+							if (name.string == interfaces[i].componentNames[j].string)
+							{
+								providerDocumented = 1				
+							}
+						}
+					}
+					//Code for adding a new componenet to the interface
+					if (!providerDocumented)
+					{
+						String newString[] = new String[(interfaces[i].componentNames.arrayLength + 1)]			//extends what is currently stored by 1
+						String newString2[] = new String[(interfaces[i].requirements.arrayLength + 1)]
+						
+						//Adds the current;y stored components and requirements in the new arrays
+						for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+						{
+							newString[j] = interfaces[i].componentNames[j]
+							newString2[j] = interfaces[i].requirements[j]
+						}
+						newString[(newString.arrayLength - 1)] = new String()
+						newString2[(newString2.arrayLength - 1)] = new String()
+						newString[(newString.arrayLength - 1)] = name
+						newString2[(newString2.arrayLength - 1)].string = "-"
+						
+						interfaces[i].componentNames = newString
+						interfaces[i].requirements = newString2
+					}
+				}	
+			}
+			
+			//Code to work out which interface the requireFile is from
+			file = stringUtil.explode(locations[iu.intFromString(requireFile)].string, "/")
+			char requirementFile[] = file[file.arrayLength - 1].string
+			bool requirementDocumented = 0
+			//Loops through all the interfaces
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				
+				for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+				{
+					//Find the interface that the requirementFile resides in. If we find it, we know that this file requires this interface
+					if (interfaces[i].componentNames[j].string == requirementFile)
+					{
+						if (interfaces[i].requirements[j].string == "-")
+						{
+							
+							interfaces[i].requirements[j].string = interfaceName
+						}
+						else
+						{
+							String comparison[] = stringUtil.explode(interfaces[i].requirements[j].string, ",")
+							for(int k = 0; k < comparison.arrayLength; k++)
+							{
+								if (comparison[k].string == interfaceName)
+								{
+									requirementDocumented = 1
+								}
+							}
+							if (!requirementDocumented)
+							{
+								String newString[] = new String[2]
+								newString[0] = new String()
+								newString[0] = interfaces[i].requirements[j]
+								newString[1] = new String()
+								newString[1].string = interfaceName
+								char output[] = stringUtil.implode(newString, ",")
+								interfaces[i].requirements[j].string = output
+							}
+						}
+						requirementDocumented = 0
+					}
+				}
+			}
+			
+			
+			return interfaces
+			
+		}
+	
+	void printInterfaces(interfaceLevels interfaces[])
+		{
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				out.print("Interface Name: ")
+				out.println(interfaces[i].interfaceName)
+				out.print("Component Names: ")
+				out.println(stringUtil.implode(interfaces[i].componentNames, ","))
+				out.print("Component Requirements: ")
+				out.println(stringUtil.implode(interfaces[i].requirements, ":"))
+				out.println("")
+			}
+		}
+		
+	interfaceLevels[] orderInterfaces(interfaceLevels interfaces[])
+		{
+			interfaceLevels newInterfaces[] = new interfaceLevels[interfaces.arrayLength]
+			int numOfLinks[] = new int[interfaces.arrayLength]
+			String interfaceNames[] = new String[interfaces.arrayLength]
+			for (int i = 0; i < newInterfaces.arrayLength; i++)
+			{
+				newInterfaces[i] = new interfaceLevels()
+				interfaceNames[i] = new String()
+				interfaceNames[i].string = interfaces[i].interfaceName
+				
+			}
+			
+			for (int i = 0; i < interfaceNames.arrayLength; i++)
+			{
+				
+				numOfLinks[i] = isSomethingLower(interfaces, interfaceNames[i].string)
+
+				
+			}
+			int i = 1
+			int j = 0
+			int buffer
+			interfaceLevels interfaceBuffer
+			while (i < numOfLinks.arrayLength)
+			{
+				j = i
+				while (j > 0)
+				{
+					if (numOfLinks[j-1] > numOfLinks[j])
+					{
+						buffer = numOfLinks[j]
+						numOfLinks[j] = numOfLinks[j-1]
+						numOfLinks[j-1] = buffer
+						
+						
+						interfaceBuffer = interfaces[j]
+						interfaces[j] = interfaces[j-1]
+						interfaces[j-1] = interfaceBuffer
+					
+						j--
+					}else{
+						break
+					}
+
+				}
+				i++
+			}
+			
+			for (i = 0; i < interfaces.arrayLength / 2; i++)
+			{
+				interfaceBuffer = interfaces[i]
+				interfaces[i] = interfaces[interfaces.arrayLength - i - 1]
+				interfaces[interfaces.arrayLength - i - 1] = interfaceBuffer
+			}
+			
+			
+			return interfaces
+		}	
+	//Calculates how many children interfaces there are
+	int isSomethingLower(interfaceLevels interfaces[], char interfaceName[])
+		{
+			int interfaceLinks = 0
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					String buffer[] = new String[interfaces[i].requirements.arrayLength]
+					for (int j=0; j < interfaces[i].requirements.arrayLength; j++)
+					{
+						buffer[j] = new String("-")
+					}
+					
+					for (int j=0; j < interfaces[i].requirements.arrayLength; j++)
+					{
+						
+						if (interfaces[i].requirements[j].string != "-")
+						{
+							bool isDocumented = 0
+							String parts[] = stringUtil.explode(interfaces[i].requirements[j].string, ",")
+							for (int k = 0; k < parts.arrayLength; k++)
+							{
+								for (int l = 0; l < buffer.arrayLength; l++)
+								{
+									if (buffer[l] == parts[k])
+									{
+										isDocumented = 1
+									}
+								}
+								
+								if (!isDocumented)
+								{
+									for (int l = 0; l < buffer.arrayLength; l++)
+									{
+										if (buffer[l].string == "-")
+										{
+											buffer[l] = parts[k]
+											break
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					for (int j = 0; j< buffer.arrayLength; j++)
+					{
+						if (buffer[j].string != "-")
+						{
+							interfaceLinks++
+							interfaceLinks = interfaceLinks + isSomethingLower(interfaces, buffer[j].string)
+						}
+					}
+					
+					return interfaceLinks
+					
+				}
+			}
+			return interfaceLinks
+		}
+			
+		
+}

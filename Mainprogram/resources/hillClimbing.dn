@@ -1,6 +1,7 @@
 uses pal.control.RestAPI
+uses tree.treeConstructor
 interface hillClimbing{
 
-	int call(RestAPI restAPI, int startNode)
+	char[] call(RestAPI restAPI, interfaceLevels interfaces[])
 		
 }

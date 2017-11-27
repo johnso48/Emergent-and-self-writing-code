@@ -1,6 +1,7 @@
 uses pal.control.RestAPI
+uses data.String
 interface webDriver{
 	
-	int getResponse(RestAPI restAPI, int configNum)
-		
+	int getResponse(RestAPI restAPI, char config[])
+	char[] getConfig(RestAPI restAPI, String configParts[])	
 }

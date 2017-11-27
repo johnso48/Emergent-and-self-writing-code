@@ -1,0 +1,20 @@
+
+uses pal.control.RestAPI
+uses data.String
+
+data interfaceLevels{
+	char interfaceName[]
+	String componentNames[]
+	String requirements[]
+}
+
+
+interface treeConstructor{
+
+
+
+	interfaceLevels[] call(RestAPI restAPI)
+	//String[] apendString(String[] stringArray, String stringToAdd)
+	bool isRelevant(int requirer, int provider, String locations[])
+	
+}

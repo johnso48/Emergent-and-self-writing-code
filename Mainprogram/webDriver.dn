@@ -5,28 +5,87 @@ const char DEFAULT_SERVER_IP[] = "localhost"
 const int DEFAULT_SERVER_PORT = 8008
 
 uses pal.control.RestAPI
-component provides webDriver requires data.IntUtil iu, time.Timer timer, net.http.HTTPRequest request, JSONReader jsonr, net.TCPSocket, io.Output out{
+component provides webDriver requires data.IntUtil iu, time.Timer timer, net.http.HTTPRequest request, JSONReader jsonr, net.TCPSocket, io.Output out, data.StringUtil stringUtil{
 
-	int webDriver:getResponse(RestAPI restAPI, int configNum)
-	{
-		int response
-		int averageResponse = 0
-	
-		String configs[] = restAPI.getConfigs()
-		restAPI.setConfig(configs[configNum].string)
+	int webDriver:getResponse(RestAPI restAPI, char config[])
+		{
+			int response
+			int averageResponse = 0
 		
-		for (int i = 0; i<ITERATION_COUNT; i++){
-			timer.sleep(STAT_INTERVAL)
-			HTTPResponse r = request.get("http://$DEFAULT_SERVER_IP:$(iu.intToString(DEFAULT_SERVER_PORT))/meta/get_perception", null)
+			restAPI.setConfig(config)
 			
-			char webResponse[] = r.content
-			response = jsonr.getReward(webResponse)
-			averageResponse = averageResponse + response 
+			for (int i = 0; i<ITERATION_COUNT; i++){
+				timer.sleep(STAT_INTERVAL)
+				HTTPResponse r = request.get("http://$DEFAULT_SERVER_IP:$(iu.intToString(DEFAULT_SERVER_PORT))/meta/get_perception", null)
+				
+				char webResponse[] = r.content
+				response = jsonr.getReward(webResponse)
+				averageResponse = averageResponse + response 
+				
+			}
 			
+			averageResponse = averageResponse / ITERATION_COUNT
+			return averageResponse
+		
 		}
-		
-		averageResponse = averageResponse / ITERATION_COUNT
-		return averageResponse
 	
-	}
+	char[] webDriver:getConfig(RestAPI restAPI, String userConfigParts[])
+		{
+			String configs[] = restAPI.getConfigs()
+			String outputConfigs[] = new String[configs.arrayLength]
+			String empty = new String()
+			bool isFileInIt = 0
+			for (int i = 0; i < outputConfigs.arrayLength; i++)
+			{
+				outputConfigs[i] = new String()
+				outputConfigs[i].string = configs[i].string
+			}
+			
+			//Cycle through the parts we want
+			for (int i = 0; i < userConfigParts.arrayLength; i++)
+			{
+				if (userConfigParts[i].string != "-")
+				{
+					out.print("Looking for: ")
+					out.println(userConfigParts[i].string)
+					//Cycle through the options
+					for (int j = 0; j < configs.arrayLength; j++)
+					{
+						if (outputConfigs[j].string != "-")
+						{
+							isFileInIt = 0														//bool for if the part we want is in this string
+							String parts[] = stringUtil.explode(configs[j].string, "|")			//Splits the config into 2 halfs
+							String configParts[] = stringUtil.explode(parts[0].string, ",")		//Splits the configParts into each file
+							for (int k = 0; k < configParts.arrayLength; k++)
+							{
+								String individualParts[] = stringUtil.explode(configParts[k].string, "/")	//Gets the name of the file
+								//Check to see if the file we want is in the this file part
+								
+								if (userConfigParts[i].string == individualParts[individualParts.arrayLength - 1].string)
+								{
+									isFileInIt = 1
+								}
+							}
+							if (!isFileInIt)
+							{
+
+								outputConfigs[j].string = "-"
+							}
+						}
+					}
+				}
+			}
+			
+			for (int i = 0; i < outputConfigs.arrayLength; i++)
+			{
+				if (outputConfigs[i].string != "-")
+				{
+					return outputConfigs[i].string
+				}
+			}
+			
+			return "Error"
+		}
+	
+	
 }

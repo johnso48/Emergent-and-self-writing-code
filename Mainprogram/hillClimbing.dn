@@ -5,51 +5,369 @@ const int ITERATION_COUNT = 3
 const int STAT_INTERVAL = 5000
 
 uses pal.control.RestAPI
-component provides hillClimbing requires webDriver drive, io.Output out, data.IntUtil iu{
+uses tree.treeConstructor
+component provides hillClimbing requires webDriver drive, io.Output out, data.IntUtil iu, data.StringUtil stringUtil{
 	
-	int hillClimbing:call(RestAPI restAPI, int startNode)
+	char[] hillClimbing:call(RestAPI restAPI, interfaceLevels interfaces[])
 		{
-			int currentNode = startNode
-			int neighbors[2]
-			int maxNode = restAPI.getConfigs().arrayLength
-			int response
-			int nextEval
-			int nextNode
+			
+			String componentNames[] = interfaces[0].componentNames
+			String interfaceRequirements[] = interfaces[0].requirements
+			int currentReward = 999999999999999999999
+			int nextReward
+			String bestComponents[] = new String[interfaces.arrayLength]
+			String nextInterfaces[] = new String[interfaces.arrayLength]
+			for (int i = 0; i < nextInterfaces.arrayLength; i++)
+			{
+				bestComponents[i] = new String("-")
+				nextInterfaces[i] = new String("-")
+			}
+			bestComponents[0] = new String("")
+			for (int i = 0; i < componentNames.arrayLength; i++)
+			{
+				String subRequirements[] = getConfigParts(componentNames[i].string, interfaces[0].interfaceName, interfaces)
+				char config[] = drive.getConfig(restAPI, subRequirements)
+				nextReward = drive.getResponse(restAPI, config)
+				if (nextReward < currentReward)
+				{
+					bestComponents[0].string = componentNames[i].string
+					String nextInterfacesTest[] = stringUtil.explode(interfaces[0].requirements[i].string, ",")
+					for (int j = 0; j < nextInterfacesTest.arrayLength; j++)
+					{
+						nextInterfaces[j].string = nextInterfacesTest[j].string
+					}
+					currentReward = nextReward
+				}
+			}
+			
+			out.println(bestComponents[0].string)
+			
+			String buffer[] = new String[interfaces.arrayLength]
+			
+			for (int i = 0; i < buffer.arrayLength; i++)
+			{
+				buffer[i] = new String("-")
+			}
 			while (1)
 			{
-				neighbors[0] = currentNode - 1
-				neighbors[1] = currentNode + 1
-				nextEval = 9999999
-				nextNode = 0
-				for (int i = 0; i < 2; i++)
+			
+				out.println("")
+				out.println("Interfaces To Test")
+				for (int i = 0; i < nextInterfaces.arrayLength; i++)
 				{
-					if (neighbors[i] >= 0)
+					out.print(nextInterfaces[i].string)
+					out.print(", ")
+				}
+				for (int i = 0; i < nextInterfaces.arrayLength; i++)
+				{
+					buffer[i].string = nextInterfaces[i].string
+					nextInterfaces[i].string = "-"
+					
+				}
+				for (int i = 0; i < buffer.arrayLength; i++)
+				{
+					if (buffer[i].string == "-")
 					{
-						if (neighbors[i] < maxNode)
+						break
+					}else
+					{
+						char bestComponentOnInterface[] = getBestComponent(restAPI, interfaces, buffer[i].string, bestComponents)
+						
+						for (int j = 0; j < interfaces.arrayLength; j++)
 						{
-							out.print("Testing node ")
-							out.println(iu.intToString(neighbors[i]))
-							response = drive.getResponse(restAPI, neighbors[i])
-							out.print("Response Recieved ")
-							out.println(iu.intToString(response))
-							if (response < nextEval)
+							if (interfaces[j].interfaceName == buffer[i].string)
 							{
-								nextNode = neighbors[i]
-								nextEval = response
+								for (int l = 0; l < interfaces[j].componentNames.arrayLength; l++)
+								{
+									if (interfaces[j].componentNames[l].string == bestComponentOnInterface)
+									{
+										int k = 0
+										while (nextInterfaces[k].string != "-")
+										{
+											k++
+										}
+										String interfacesToTest[] = stringUtil.explode(interfaces[j].requirements[l].string, ",")
+										out.println("Next interfaces")
+										for (int m = 0; m < interfacesToTest.arrayLength; m++)
+										{
+											
+											out.print(interfacesToTest[m].string)
+											out.print(", ")
+											nextInterfaces[k].string = interfacesToTest[m].string
+											k++
+										}
+									}
+								}								
+							}
+						}
+						
+						int j = 0
+						while (bestComponents[j].string != "-")
+						{
+							j++
+						}
+						bestComponents[j].string = bestComponentOnInterface
+						
+						buffer[i].string = "-"
+						
+					}
+				}
+				
+				if (isAtBottom(interfaces, bestComponents))
+				{
+					break
+				}
+			}
+			
+			
+			return drive.getConfig(restAPI, bestComponents)
+		}
+		
+		
+	char[] getBestComponent(RestAPI restAPI, interfaceLevels interfaces[], char interfaceName[], String bestComponents[])
+		{
+			char bestComponent[] = ""
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					out.println("")
+					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+					{
+						out.println(interfaces[i].componentNames[j].string)
+					}
+					if(interfaces[i].componentNames.arrayLength == 1)
+					{
+						String bestComponentt[] = new String[1]
+						bestComponentt[0] = new String()
+						bestComponentt[0].string = interfaces[i].componentNames[0].string
+						return bestComponentt[0].string
+					}else
+					{
+						int currentReward = 9999999999
+						int nextReward = 0
+						
+						for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+						{
+							out.println(interfaces[i].componentNames[j].string)
+							
+							String subRequirements[] = getConfigParts(interfaces[i].componentNames[j].string, interfaces[i].interfaceName, interfaces)
+							String componentsToTest[] = new String[bestComponents.arrayLength + subRequirements.arrayLength]
+							for (int k = 0; k < componentsToTest.arrayLength; k ++)
+							{
+								componentsToTest[k] = new String("-")
+							}
+							int k = 0
+							for (k = 0; k < bestComponents.arrayLength; k++)
+							{
+								if(bestComponents[k].string != "-")
+								{
+									componentsToTest[k] = bestComponents[k]
+								}else{
+									break
+								}
+								
+							}
+							for (int l = 0; l < subRequirements.arrayLength; l++)
+							{
+								componentsToTest[k] = subRequirements[l]
+								k++
+							}
+							
+							for(int l = 0; l < componentsToTest.arrayLength; l++)
+							{
+								out.println(componentsToTest[l].string)
+							}
+							
+							char config[] = drive.getConfig(restAPI, componentsToTest)
+							
+							out.println(config)
+							
+							nextReward = drive.getResponse(restAPI, config)
+							
+							if (nextReward < currentReward)
+							{
+								bestComponent = interfaces[i].componentNames[j].string
+								currentReward = nextReward
+							}
+							
+						}
+					}
+					return bestComponent
+				}	
+			}
+			
+			
+			
+			String emptyComponents[] = new String[1]
+			emptyComponents[0] = new String("-")
+			return emptyComponents[0].string
+		}
+		
+		
+	bool isAtBottom(interfaceLevels interfaces[], String bestComponents[])
+		{
+			for (int i =0; i < bestComponents.arrayLength; i++)
+			{
+				if (bestComponents[i].string != "-")
+				{
+					char nextInterface[] = "-"
+					for (int j = 0; j < interfaces.arrayLength; j++)
+					{
+						for (int k = 0; k < interfaces[j].componentNames.arrayLength; k++)
+						{
+							if (interfaces[j].componentNames[k].string == bestComponents[i].string)
+							{
+								nextInterface = interfaces[j].requirements[k].string
+							}
+						}
+					}
+					String singleInterfaces[] = stringUtil.explode(nextInterface, ",")
+					for (int m = 0; m < singleInterfaces.arrayLength; m++)
+					{
+						if (singleInterfaces[m].string != "-")
+						{
+							bool interfaceProvided = 0
+							for (int j = 0; j < interfaces.arrayLength; j++)
+							{
+								if (interfaces[j].interfaceName == singleInterfaces[m].string)
+								{
+									for (int k = 0; k < interfaces[j].componentNames.arrayLength; k++)
+									{
+										for(int l = 0; l < bestComponents.arrayLength; l++)
+										{
+											if (interfaces[j].componentNames[k].string == bestComponents[l].string)
+											{
+												interfaceProvided = 1
+											}
+										}
+											
+									}
+								}
+							}
+							
+							if (!interfaceProvided)
+							{
+								return 0
+							}
+							
+						}
+					}
+				}
+			}
+			return 1
+		}
+		
+	String[] getConfigParts(char componentName[], char interfaceName[], interfaceLevels interfaces[])
+		{
+			String part[]
+			for(int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+					{
+						if (interfaces[i].componentNames[j].string == componentName)
+						{
+							if (interfaces[i].requirements[j].string == "-")
+							{
+								String returnComponent[] = new String[1]
+								returnComponent[0] = new String()
+								returnComponent[0].string = componentName
+								return returnComponent
+							}else
+							{
+								String subInterfaceNames[] = stringUtil.explode(interfaces[i].requirements[j].string, ",")
+								int numOfSubParts = 0
+								for (int k = 0; k < subInterfaceNames.arrayLength; k++)
+								{
+									numOfSubParts = numOfSubParts + getSubParts(subInterfaceNames[k].string, interfaces).arrayLength
+								}
+								part = new String[numOfSubParts + 1]
+								for (int k = 0; k < part.arrayLength; k++)
+								{
+									part[k] = new String()
+									part[k].string = "-"
+								}
+								
+								part[0].string = componentName
+								for (int k = 0; k < subInterfaceNames.arrayLength; k++)
+								{
+									String subParts[] = getSubParts(subInterfaceNames[k].string, interfaces)
+									int l = 1
+									while (part[l].string != "-")
+									{
+										l++
+										
+									}
+									for (int m = 0; m < subParts.arrayLength; m++)
+									{
+										part[l] = subParts[m]
+										l++
+									}
+								}
+								return part
 							}
 						}
 					}
 				}
-				out.print("Testing node ")
-				out.println(iu.intToString(currentNode))
-				response = drive.getResponse(restAPI, currentNode)
-				out.print("Response Recieved ")
-				out.println(iu.intToString(response))
-				if (nextEval >= response)
+			}
+			
+			String default[] = new String[1]
+			default[0] = new String("-")
+			return default
+		}
+	
+	
+	
+	
+	String[] getSubParts(char interfaceName[], interfaceLevels interfaces[])
+		{
+			String parts[]
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
 				{
-					return currentNode
+					if (interfaces[i].requirements[0].string == "-")
+					{
+						parts = new String[1]
+						parts[0] = interfaces[i].componentNames[0]
+						return parts
+					}else{
+						String subInterfaceNames[] = stringUtil.explode(interfaces[i].requirements[0].string, ",")
+
+						int numOfSubParts = 0
+						for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+						{
+							numOfSubParts = numOfSubParts + getSubParts(subInterfaceNames[j].string, interfaces).arrayLength	
+						}
+						parts = new String[numOfSubParts + 1]
+						for (int j = 0; j < parts.arrayLength; j++)
+						{
+							parts[j] = new String("-")
+						}
+						parts[0] = interfaces[i].componentNames[0]
+						for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+						{
+							String subParts[] = getSubParts(subInterfaceNames[j].string, interfaces)
+							int l = 1
+							while (parts[l].string != "-"){
+								l++
+							}
+							for (int k = 0; k < subParts.arrayLength; k++)
+							{
+								parts[l] = subParts[k]
+								l++
+							}
+						}
+						return parts
+					}
 				}
 			}
-			return 0
-		}	
+			String default[] = new String[1]
+			default[0] = new String("-")
+			return default
+		}
+	
+	
 }
