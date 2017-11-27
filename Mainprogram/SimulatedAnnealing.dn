@@ -1,26 +1,34 @@
 
 uses pal.control.RestAPI
-component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math{
+component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.DecUtil decu{
 
 	int SimulatedAnnealing:call(RestAPI restAPI, int startNode, int maxSteps)
 		{
-			int s = startNode
+			int s = startNode							
 			int maxNode = restAPI.getConfigs().arrayLength
 			ri.setSeed(du.toMilliseconds(cal.getTime()))
-			dec t
-			dec calculations
-			int sNew
+			dec t							//Temp value for use in the probablity calculation
+			dec calculations					//variable for storing a calculation
+			int sNew						//New node to test
 			dec probability
 			
-			dec sReward
-			dec sNewReward
+			dec sReward						//Reward value for the current node
+			dec sNewReward						//Reward value for next node
 			int randomNum
 			for (int i = 1; i<=maxSteps; i++)
 			{
+				out.print("Step Number: ")
+				out.println(iu.intToString(i))
 				t = temp(i, maxSteps)
+				out.print("Current Temp: ")
+				out.println(decu.decToString(t))
 				sNew = ri.get(maxNode)
 				sReward = drive.getResponse(restAPI, s)
+				out.print("Current node reward: ")
+				out.println(decu.decToString(sReward))
 				sNewReward = drive.getResponse(restAPI, sNew)
+				out.print("Next node reward: ")
+				out.println(decu.decToString(sNewReward))
 				if (sReward > sNewReward)
 				{
 					probability = 1
@@ -39,12 +47,20 @@ component provides SimulatedAnnealing requires webDriver drive, io.Output out, d
 					} 
 					
 				}
+				out.print("Probablity: ")
+				out.println(decu.decToString(probability))
 				randomNum = ri.get(1000)/1000
 				
 				if (probability >= randomNum)
 				{
 					s = sNew
+					out.println("Moving to new node")
+				}else
+				{
+					out.println("Staying on current node")
 				}
+				
+				out.println("")
 			}
 			
 			return s
