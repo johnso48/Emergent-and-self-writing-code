@@ -40,7 +40,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 				}
 			}
 			
-			out.println(bestComponents[0].string)
 			
 			String buffer[] = new String[interfaces.arrayLength]
 			
@@ -50,14 +49,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 			}
 			while (1)
 			{
-			
-				out.println("")
-				out.println("Interfaces To Test")
-				for (int i = 0; i < nextInterfaces.arrayLength; i++)
-				{
-					out.print(nextInterfaces[i].string)
-					out.print(", ")
-				}
 				for (int i = 0; i < nextInterfaces.arrayLength; i++)
 				{
 					buffer[i].string = nextInterfaces[i].string
@@ -87,12 +78,8 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 											k++
 										}
 										String interfacesToTest[] = stringUtil.explode(interfaces[j].requirements[l].string, ",")
-										out.println("Next interfaces")
 										for (int m = 0; m < interfacesToTest.arrayLength; m++)
 										{
-											
-											out.print(interfacesToTest[m].string)
-											out.print(", ")
 											nextInterfaces[k].string = interfacesToTest[m].string
 											k++
 										}
@@ -174,10 +161,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 								k++
 							}
 							
-							for(int l = 0; l < componentsToTest.arrayLength; l++)
-							{
-								out.println(componentsToTest[l].string)
-							}
 							
 							char config[] = drive.getConfig(restAPI, componentsToTest)
 							
