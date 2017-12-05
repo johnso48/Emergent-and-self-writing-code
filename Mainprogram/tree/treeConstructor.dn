@@ -69,6 +69,7 @@ component provides treeConstructor requires webDriver drive, io.Output out, data
 	//Method for checking if the files that the server needs is part of the default dana API
 	bool treeConstructor:isRelevant(int requirer, int provider, String locations[])
 		{
+			return true
 			String requirerExplode[] = stringUtil.explode(locations[requirer].string, "/")
 			String providerExplode[] = stringUtil.explode(locations[provider].string, "/")
 
@@ -258,11 +259,19 @@ component provides treeConstructor requires webDriver drive, io.Output out, data
 				
 			}
 			
+			String empty[] = new String[interfaces.arrayLength]
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				empty[i] = new String("-")
+			}
+			
 			for (int i = 0; i < interfaceNames.arrayLength; i++)
 			{
 				
-				numOfLinks[i] = isSomethingLower(interfaces, interfaceNames[i].string)
-
+				numOfLinks[i] = isSomethingLower(interfaces, interfaceNames[i].string, empty)
+				out.print(interfaceNames[i].string)
+				out.print(" = ")
+				out.println(iu.intToString(numOfLinks[i]))
 				
 			}
 			int i = 1
@@ -305,9 +314,89 @@ component provides treeConstructor requires webDriver drive, io.Output out, data
 			return interfaces
 		}	
 	//Calculates how many children interfaces there are
-	int isSomethingLower(interfaceLevels interfaces[], char interfaceName[])
+	int isSomethingLower(interfaceLevels interfaces[], char interfaceName[], String knownInterfaces[])
 		{
 			int interfaceLinks = 0
+			String dupBuffer[] = new String[interfaces.arrayLength]
+			String interfacesToTest[] = new String[interfaces.arrayLength]
+			for (int i =0; i < interfaces.arrayLength; i++)
+			{
+				dupBuffer[i] = new String("-")
+				interfacesToTest[i] = new String("-")
+			}
+			if (knownInterfaces[0].string != "-")
+			{
+				for (int i = 0; i < knownInterfaces.arrayLength; i++)
+				{
+					dupBuffer[i] = knownInterfaces[i] 
+				}
+			}
+			
+			
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+				
+					for (int j = 0; j < interfaces[i].requirements.arrayLength; j++)
+					{
+						if (interfaces[i].requirements[j].string != "-")
+						{
+							bool isDocumented = 0
+							String parts[] = stringUtil.explode(interfaces[i].requirements[j].string, ",")
+							for (int k = 0; k < parts.arrayLength; k++)
+							{
+								for (int l = 0; l < dupBuffer.arrayLength; l++)
+								{
+									if(dupBuffer[l].string == parts[k].string)
+									{
+										isDocumented = 1
+									}
+								}
+								if (!isDocumented)
+								{
+									interfaceLinks++
+									for (int l = 0; l < dupBuffer.arrayLength; l++)
+									{
+										if(dupBuffer[l].string == "-")
+										{
+											dupBuffer[l].string = parts[k].string
+											break
+										}
+									}
+									for (int l = 0; l < interfacesToTest.arrayLength; l++)
+									{
+										if(interfacesToTest[l].string == "-")
+										{
+											interfacesToTest[l].string = parts[k].string
+											break
+										}
+									}
+								}
+								isDocumented = 0
+							}
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < interfacesToTest.arrayLength; i++)
+			{
+				if (interfacesToTest[i].string != "-")
+				{
+					interfaceLinks = interfaceLinks + isSomethingLower(interfaces, interfacesToTest[i].string, dupBuffer)
+				}
+			}
+		
+			return interfaceLinks
+		
+		/**
+			int interfaceLinks = 0
+			String dupBuffer[] = new String[interfaces.arrayLength]
+			for(int i =0; i < interfaces.arrayLength; i++)
+			{
+				dupBuffer[i] = new String("-")
+			}
 			for (int i = 0; i < interfaces.arrayLength; i++)
 			{
 				if (interfaces[i].interfaceName == interfaceName)
@@ -364,6 +453,8 @@ component provides treeConstructor requires webDriver drive, io.Output out, data
 				}
 			}
 			return interfaceLinks
+			
+		*/
 		}
 			
 		

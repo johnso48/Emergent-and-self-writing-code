@@ -1,7 +1,8 @@
 uses pal.control.RestAPI
+uses tree.treeConstructor
 interface SimulatedAnnealing{
 
-	int call(RestAPI restAPI, int startNode, int maxSteps)
+	char[] call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[])
 	dec temp(int k, int kMax)
 		
 }

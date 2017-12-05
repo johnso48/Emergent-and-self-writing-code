@@ -92,7 +92,12 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 						while (bestComponents[j].string != "-")
 						{
 							j++
+							if (j == bestComponents.arrayLength - 1)
+							{
+								break
+							}
 						}
+						out.println(iu.intToString(j))
 						bestComponents[j].string = bestComponentOnInterface
 						
 						buffer[i].string = "-"
@@ -118,11 +123,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 			{
 				if (interfaces[i].interfaceName == interfaceName)
 				{
-					out.println("")
-					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
-					{
-						out.println(interfaces[i].componentNames[j].string)
-					}
 					if(interfaces[i].componentNames.arrayLength == 1)
 					{
 						String bestComponentt[] = new String[1]
@@ -136,7 +136,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 						
 						for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
 						{
-							out.println(interfaces[i].componentNames[j].string)
 							
 							String subRequirements[] = getConfigParts(interfaces[i].componentNames[j].string, interfaces[i].interfaceName, interfaces)
 							String componentsToTest[] = new String[bestComponents.arrayLength + subRequirements.arrayLength]
@@ -176,6 +175,7 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 							
 						}
 					}
+					out.println("test")
 					return bestComponent
 				}	
 			}

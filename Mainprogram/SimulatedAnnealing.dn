@@ -1,26 +1,37 @@
 
 uses pal.control.RestAPI
-component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math{
+uses tree.treeConstructor
+component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.StringUtil stringUtil{
 
-	int SimulatedAnnealing:call(RestAPI restAPI, int startNode, int maxSteps)
+	char[] SimulatedAnnealing:call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[])
 		{
-			int s = startNode
+			String empty[] = new String[1]
+			empty[0] = new String("")
+			String sCurrent[] = getConfigParts(interfaces[0].componentNames[0].string, interfaces[0].interfaceName, interfaces, empty)
+			
 			int maxNode = restAPI.getConfigs().arrayLength
 			ri.setSeed(du.toMilliseconds(cal.getTime()))
 			dec t
 			dec calculations
-			int sNew
+			String sNew[]
+			
 			dec probability
 			
 			dec sReward
 			dec sNewReward
 			int randomNum
+			char nextServerConfig[]
 			for (int i = 1; i<=maxSteps; i++)
 			{
 				t = temp(i, maxSteps)
-				sNew = ri.get(maxNode)
-				sReward = drive.getResponse(restAPI, s)
-				sNewReward = drive.getResponse(restAPI, sNew)
+				sNew = getNeighbour(interfaces, sCurrent)
+				
+				
+				nextServerConfig = drive.getConfig(restAPI, sCurrent)
+				out.println(nextServerConfig)
+				sReward = drive.getResponse(restAPI, nextServerConfig)
+				
+				sNewReward = drive.getResponse(restAPI, drive.getConfig(restAPI, sNew))
 				if (sReward > sNewReward)
 				{
 					probability = 1
@@ -34,20 +45,18 @@ component provides SimulatedAnnealing requires webDriver drive, io.Output out, d
 						}
 					}else
 					{
-						calculations = (-(sNewReward - sReward))/t
-						probability = math.natexp(calculations)
-					} 
-					
+						probability = getProbability(sNewReward, sReward, t)
+					} 	
 				}
 				randomNum = ri.get(1000)/1000
 				
-				if (probability >= randomNum)
+				if (probability <= randomNum)
 				{
-					s = sNew
+					sCurrent = sNew
 				}
 			}
 			
-			return s
+			return drive.getConfig(restAPI, sCurrent)
 		}
 	
 	
@@ -56,5 +65,290 @@ component provides SimulatedAnnealing requires webDriver drive, io.Output out, d
 			dec maxTemp = kMax * 0.1
 			dec currentTemp = maxTemp - (k*0.1)
 			return currentTemp
+		}
+		
+	dec getProbability(dec newNode, dec currentNode, dec t)
+		{
+			dec calculations = ((-(newNode - currentNode))/t)
+			calculations = math.natexp(calculations)
+			return calculations
+		}
+		
+		
+	String[] getNeighbour(interfaceLevels interfaces[], String currentConfig[])
+		{
+			int randomConfig
+			int randomNum
+			char output
+			int interfaceIndex
+			char nextComponent[]
+			bool isInList = 1
+			int exitloop = 0
+			
+			while (1)
+			{
+				randomConfig = ri.get(currentConfig.arrayLength)						//The config we are changing
+				for (int i = 0; i < interfaces.arrayLength; i++)
+				{
+					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+					{
+						if (currentConfig[randomConfig].string == interfaces[i].componentNames[j].string)
+						{
+							if (interfaces[i].componentNames.arrayLength == 1)
+							{
+								break
+							}else
+							{
+								while (exitloop == 0)
+								{
+									randomNum = ri.get(interfaces[i].componentNames.arrayLength)
+									if (interfaces[i].componentNames[randomNum].string != currentConfig[randomConfig].string)
+									{
+										nextComponent = interfaces[i].componentNames[randomNum].string
+										interfaceIndex = i
+										exitloop = 1
+										
+										break
+									}
+								}
+								
+								
+							}
+						}
+						
+						if (exitloop == 1)
+						{
+							break
+						}
+					}
+					if (exitloop == 1)
+					{
+						break
+					}
+				}
+				
+				if (exitloop == 1)
+				{
+					break
+				}
+			}
+			
+			out.println(iu.intToString(randomConfig))
+			
+			String currentComponents[] = new String[randomConfig]
+			for (int i = 0; i < currentComponents.arrayLength; i++)
+			{
+				currentComponents[i] = new String("")
+			}
+			for (int i = 0; i < randomConfig; i++)
+			{
+				currentComponents[i].string = currentConfig[i].string
+				out.println(currentConfig[i].string)
+				out.println(currentComponents[i].string)
+			}
+			
+			
+			
+			String nextConfigParts[] = getConfigParts(nextComponent, interfaces[interfaceIndex].interfaceName, interfaces, currentConfig)
+			
+			for (int i = 0; i < nextConfigParts.arrayLength; i++)
+			{
+				out.println(nextConfigParts[i].string)
+			}
+			
+			String newConfig[] = new String[currentComponents.arrayLength + nextConfigParts.arrayLength]
+			for (int i = 0; i < newConfig.arrayLength; i++)
+			{
+				newConfig[i] = new String ("")
+			}
+			int i = 0
+			for (i = 0; i < currentComponents.arrayLength; i++)
+			{
+				newConfig[i].string = currentComponents[i].string
+			}
+			out.println(iu.intToString(i))
+			
+			int j = i
+			for (i = 0; i < nextConfigParts.arrayLength; i++)
+			{
+				newConfig[j].string = nextConfigParts[i].string
+				j++
+			}
+			
+			return newConfig
+			
+		}
+		
+			
+	String[] getConfigParts(char componentName[], char interfaceName[], interfaceLevels interfaces[], String currentConfig[])
+		{
+			String part[]
+			for(int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+					{
+						if (interfaces[i].componentNames[j].string == componentName)
+						{
+							if (interfaces[i].requirements[j].string == "-")
+							{
+								String returnComponent[] = new String[1]
+								returnComponent[0] = new String()
+								returnComponent[0].string = componentName
+								return returnComponent
+							}else
+							{
+								String subInterfaceNames[] = stringUtil.explode(interfaces[i].requirements[j].string, ",")
+								int numOfSubParts = 0
+								for (int k = 0; k < subInterfaceNames.arrayLength; k++)
+								{
+									numOfSubParts = numOfSubParts + getSubParts(subInterfaceNames[k].string, interfaces, currentConfig).arrayLength
+								}
+								part = new String[numOfSubParts + 1]
+								for (int k = 0; k < part.arrayLength; k++)
+								{
+									part[k] = new String()
+									part[k].string = "-"
+								}
+								
+								part[0].string = componentName
+								for (int k = 0; k < subInterfaceNames.arrayLength; k++)
+								{
+									String subParts[] = getSubParts(subInterfaceNames[k].string, interfaces, currentConfig)
+									int l = 1
+									while (part[l].string != "-")
+									{
+										l++
+										
+									}
+									for (int m = 0; m < subParts.arrayLength; m++)
+									{
+										part[l] = subParts[m]
+										l++
+									}
+								}
+								return part
+							}
+						}
+					}
+				}
+			}
+			
+			String default[] = new String[1]
+			default[0] = new String("-")
+			return default
+		}
+		
+	String[] getSubParts(char interfaceName[], interfaceLevels interfaces[], String currentConfig[])
+		{
+			
+			int randomNum
+			String parts[]
+			bool inList = 0
+			char componentName[]
+			
+			int indexNum
+			for (int i = 0; i < interfaces.arrayLength; i++)
+			{
+				if (interfaces[i].interfaceName == interfaceName)
+				{
+					for (int j = 0; j < interfaces[i].componentNames.arrayLength; j++)
+					{
+						for (int k = 0; k < currentConfig.arrayLength; k++)
+						{
+							if (interfaces[i].componentNames[j].string == currentConfig[k].string)
+							{
+								inList = 1
+								componentName = currentConfig[k].string
+								indexNum = j
+							}
+						}
+					}
+					if (!inList)
+					{
+						randomNum = ri.get(interfaces[i].componentNames.arrayLength)
+						if (interfaces[i].requirements[randomNum].string == "-")
+						{
+							parts = new String[1]
+							parts[0] = interfaces[i].componentNames[0]
+							return parts
+						}else
+						{
+							String subInterfaceNames[] = stringUtil.explode(interfaces[i].requirements[0].string, ",")
+
+							int numOfSubParts = 0
+							for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+							{
+								numOfSubParts = numOfSubParts + getSubParts(subInterfaceNames[j].string, interfaces, currentConfig).arrayLength	
+							}
+							parts = new String[numOfSubParts + 1]
+							for (int j = 0; j < parts.arrayLength; j++)
+							{
+								parts[j] = new String("-")
+							}
+							parts[0] = interfaces[i].componentNames[randomNum]
+							for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+							{
+								String subParts[] = getSubParts(subInterfaceNames[j].string, interfaces, currentConfig)
+								int l = 1
+								while (parts[l].string != "-")
+								{
+									l++
+								}
+								for (int k = 0; k < subParts.arrayLength; k++)
+								{
+									parts[l] = subParts[k]
+									l++
+								}
+							}
+							return parts
+						}
+					
+					}else
+					{
+												
+						if (interfaces[i].requirements[indexNum].string == "-")
+						{
+							parts = new String[1]
+							parts[0] = interfaces[i].componentNames[0]
+							return parts
+						}else
+						{
+							String subInterfaceNames[] = stringUtil.explode(interfaces[i].requirements[0].string, ",")
+
+							int numOfSubParts = 0
+							for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+							{
+								numOfSubParts = numOfSubParts + getSubParts(subInterfaceNames[j].string, interfaces, currentConfig).arrayLength	
+							}
+							parts = new String[numOfSubParts + 1]
+							for (int j = 0; j < parts.arrayLength; j++)
+							{
+								parts[j] = new String("-")
+							}
+							parts[0] = interfaces[i].componentNames[indexNum]
+							for (int j = 0; j < subInterfaceNames.arrayLength; j++)
+							{
+								String subParts[] = getSubParts(subInterfaceNames[j].string, interfaces, currentConfig)
+								int l = 1
+								while (parts[l].string != "-"){
+									l++
+								}
+								for (int k = 0; k < subParts.arrayLength; k++)
+								{
+									parts[l] = subParts[k]
+									l++
+								}
+							}
+							return parts
+						}
+					}
+				}
+			}
+			String default[] = new String[1]
+			default[0] = new String("-")
+			return default
+			
 		}
 }

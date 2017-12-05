@@ -19,7 +19,8 @@ component provides App requires net.TCPSocket, pal.control.RestAPI, net.http.HTT
 			*/
 			
 			interfaceLevels test[] = tc.call(restAPI)
-			char best[] = hc.call(restAPI, test)
+			char best[] = SA.call(restAPI, 40, test)
+			//char best[] = hc.call(restAPI, test)
 			out.println("Best server config for current workload")
 			out.println(best)
 			
