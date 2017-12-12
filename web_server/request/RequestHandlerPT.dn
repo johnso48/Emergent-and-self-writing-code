@@ -15,7 +15,7 @@ data WorkerThread {
 
 const char debugMSG[] = "[@RequestHandlerPT]"
 
-component provides request.RequestHandler(Destructor) requires io.Output out, data.IntUtil iu, 
+component provides request.RequestHandler(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, 
 	http.HTTPHandler httpHandler, time.Timer t, time.Calendar ic {
 	
 	bool setupDone
@@ -122,14 +122,14 @@ component provides request.RequestHandler(Destructor) requires io.Output out, da
 		
 		wt.thread.signal()
 	}
+	
+	void AdaptEvents:inactive()
+		{
+		destroy()
+		}
 
 	// worker, last worker and lastusedworker is a bit confusing...
 	void Destructor:destroy() {
-
-		// join was not working, cause all
-		// the threads were in an infinite loop
-		// so I added the 'on' value to each thread
-		// as a work around this situation
 		WorkerThread wt = workers
 		
 		destroying = true

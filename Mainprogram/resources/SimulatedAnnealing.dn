@@ -1,8 +1,9 @@
 uses pal.control.RestAPI
 uses tree.treeConstructor
+uses Knowledge.KnowledgeBase
 interface SimulatedAnnealing{
 
-	char[] call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[])
+	char[] call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[], KnowledgeBase kb)
 	dec temp(int k, int kMax)
 		
 }

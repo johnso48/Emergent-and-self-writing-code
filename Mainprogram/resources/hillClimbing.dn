@@ -1,7 +1,8 @@
 uses pal.control.RestAPI
 uses tree.treeConstructor
+uses Knowledge.KnowledgeBase
 interface hillClimbing{
 
-	char[] call(RestAPI restAPI, interfaceLevels interfaces[])
+	char[] call(RestAPI restAPI, interfaceLevels interfaces[], KnowledgeBase kb)
 		
 }

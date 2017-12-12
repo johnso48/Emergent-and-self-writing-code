@@ -2,6 +2,7 @@ uses pal.control.RestAPI
 uses data.String
 interface webDriver{
 	
-	int getResponse(RestAPI restAPI, char config[])
-	char[] getConfig(RestAPI restAPI, String configParts[])	
+	webDriver(RestAPI restapi)
+	int getResponse(char config[])
+	char[] getConfig(String configParts[])	
 }

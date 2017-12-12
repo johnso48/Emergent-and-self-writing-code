@@ -6,11 +6,12 @@ const int STAT_INTERVAL = 5000
 
 uses pal.control.RestAPI
 uses tree.treeConstructor
-component provides hillClimbing requires webDriver drive, io.Output out, data.IntUtil iu, data.StringUtil stringUtil{
+component provides hillClimbing requires webDriver, io.Output out, data.IntUtil iu, data.StringUtil stringUtil, Knowledge.KnowledgeBase{
 	
-	char[] hillClimbing:call(RestAPI restAPI, interfaceLevels interfaces[])
+	webDriver drive
+	char[] hillClimbing:call(RestAPI restAPI, interfaceLevels interfaces[], KnowledgeBase kb)
 		{
-			
+			drive = new webDriver(restAPI)
 			String componentNames[] = interfaces[0].componentNames
 			String interfaceRequirements[] = interfaces[0].requirements
 			int currentReward = 999999999999999999999
@@ -26,8 +27,8 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 			for (int i = 0; i < componentNames.arrayLength; i++)
 			{
 				String subRequirements[] = getConfigParts(componentNames[i].string, interfaces[0].interfaceName, interfaces)
-				char config[] = drive.getConfig(restAPI, subRequirements)
-				nextReward = drive.getResponse(restAPI, config)
+				char config[] = drive.getConfig(subRequirements)
+				nextReward = kb.testNewConfig(config)
 				if (nextReward < currentReward)
 				{
 					bestComponents[0].string = componentNames[i].string
@@ -49,21 +50,21 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 			}
 			while (1)
 			{
+
 				for (int i = 0; i < nextInterfaces.arrayLength; i++)
 				{
 					buffer[i].string = nextInterfaces[i].string
+					out.print(buffer[i].string)
+					out.print(", ")
 					nextInterfaces[i].string = "-"
 					
 				}
+				
 				for (int i = 0; i < buffer.arrayLength; i++)
 				{
-					if (buffer[i].string == "-")
+					char bestComponentOnInterface[] = getBestComponent(restAPI, interfaces, buffer[i].string, bestComponents, kb)
+					if (bestComponentOnInterface != "-")
 					{
-						break
-					}else
-					{
-						char bestComponentOnInterface[] = getBestComponent(restAPI, interfaces, buffer[i].string, bestComponents)
-						
 						for (int j = 0; j < interfaces.arrayLength; j++)
 						{
 							if (interfaces[j].interfaceName == buffer[i].string)
@@ -87,37 +88,58 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 								}								
 							}
 						}
+					}					
+					
 						
-						int j = 0
-						while (bestComponents[j].string != "-")
+					int j = 0
+					while (bestComponents[j].string != "-")
+					{
+						j++
+						if (j == bestComponents.arrayLength - 1)
 						{
-							j++
-							if (j == bestComponents.arrayLength - 1)
-							{
-								break
-							}
+							break
 						}
-						out.println(iu.intToString(j))
-						bestComponents[j].string = bestComponentOnInterface
+					}
+					bestComponents[j].string = bestComponentOnInterface
 						
+					buffer[i].string = "-"
+						
+				}
+				int exit = 0
+				for (int i = 0; i< nextInterfaces.arrayLength; i++)
+				{
+					if (nextInterfaces[i].string != "-")
+					{
+						exit = 1
+					}
+				}
+				if (exit == 0)
+				{
+					break
+				}else
+				{
+					for (int i = 0; i < buffer.arrayLength; i++)
+					{
 						buffer[i].string = "-"
-						
 					}
 				}
 				
-				if (isAtBottom(interfaces, bestComponents))
-				{
-					break
-				}
+				
+				
 			}
+				
 			
 			
-			return drive.getConfig(restAPI, bestComponents)
+			return drive.getConfig(bestComponents)
 		}
 		
 		
-	char[] getBestComponent(RestAPI restAPI, interfaceLevels interfaces[], char interfaceName[], String bestComponents[])
+	char[] getBestComponent(RestAPI restAPI, interfaceLevels interfaces[], char interfaceName[], String bestComponents[], KnowledgeBase kb)
 		{
+			if (interfaceName == "-")
+			{
+				return "-"
+			}
 			char bestComponent[] = ""
 			for (int i = 0; i < interfaces.arrayLength; i++)
 			{
@@ -161,11 +183,10 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 							}
 							
 							
-							char config[] = drive.getConfig(restAPI, componentsToTest)
+							char config[] = drive.getConfig(componentsToTest)
 							
-							out.println(config)
 							
-							nextReward = drive.getResponse(restAPI, config)
+							nextReward = kb.testNewConfig(config)
 							
 							if (nextReward < currentReward)
 							{
@@ -175,7 +196,6 @@ component provides hillClimbing requires webDriver drive, io.Output out, data.In
 							
 						}
 					}
-					out.println("test")
 					return bestComponent
 				}	
 			}

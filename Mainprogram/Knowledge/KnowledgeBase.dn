@@ -1,0 +1,69 @@
+component provides KnowledgeBase requires io.Output out, webDriver{
+
+	String storedConfigs[]
+	int configRewards[]
+	webDriver drive
+	
+	
+	KnowledgeBase:KnowledgeBase(RestAPI restAPI)
+	{
+		drive = new webDriver(restAPI)
+	}
+	
+	bool KnowledgeBase:inKnowledgeBase(char config[])
+		{
+			for (int i = 0; i < storedConfigs.arrayLength; i++)
+			{
+				if (config == storedConfigs[i].string)
+				{
+					return true
+				}
+			}
+			return false
+		}
+		
+	int KnowledgeBase:testNewConfig(char config[])
+		{
+			int rewardValue = getRewardValue(config)
+			if (rewardValue != 0)
+			{
+				out.println("Test")
+				return rewardValue
+			}else
+			{
+				String newStoredConfigs[] = new String[storedConfigs.arrayLength + 1]
+				int newConfigRewards[] = new int[configRewards.arrayLength + 1]
+				for (int i = 0; i < storedConfigs.arrayLength; i++)
+				{
+					newStoredConfigs[i] = new String("")
+					newStoredConfigs[i].string = storedConfigs[i].string
+					out.println(storedConfigs[i].string)
+					newConfigRewards[i] = configRewards[i]
+				}
+				newStoredConfigs[newStoredConfigs.arrayLength - 1] = new String("")
+				int configRewardValue = drive.getResponse(config)
+				newStoredConfigs[newStoredConfigs.arrayLength - 1].string = config
+				newConfigRewards[newConfigRewards.arrayLength - 1] = configRewardValue
+				
+				storedConfigs = newStoredConfigs
+				configRewards = newConfigRewards
+				
+				return configRewardValue
+			}
+
+			return 0
+		}
+		
+		
+	int getRewardValue(char config[])
+		{
+			for (int i = 0; i < storedConfigs.arrayLength; i++)
+			{
+				if (config == storedConfigs[i].string)
+				{
+					return i
+				}
+			}
+			return 0
+		}
+}

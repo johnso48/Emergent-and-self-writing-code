@@ -1,10 +1,13 @@
 
 uses pal.control.RestAPI
 uses tree.treeConstructor
-component provides SimulatedAnnealing requires webDriver drive, io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.StringUtil stringUtil{
+uses Knowledge.KnowledgeBase
+component provides SimulatedAnnealing requires webDriver , io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.StringUtil stringUtil{
 
-	char[] SimulatedAnnealing:call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[])
+	webDriver drive
+	char[] SimulatedAnnealing:call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[], KnowledgeBase kb)
 		{
+			drive = new webDriver(restAPI)
 			String empty[] = new String[1]
 			empty[0] = new String("")
 			String sCurrent[] = getConfigParts(interfaces[0].componentNames[0].string, interfaces[0].interfaceName, interfaces, empty)
@@ -27,11 +30,11 @@ component provides SimulatedAnnealing requires webDriver drive, io.Output out, d
 				sNew = getNeighbour(interfaces, sCurrent)
 				
 				
-				nextServerConfig = drive.getConfig(restAPI, sCurrent)
+				nextServerConfig = drive.getConfig(sCurrent)
 				out.println(nextServerConfig)
-				sReward = drive.getResponse(restAPI, nextServerConfig)
+				sReward = drive.getResponse(nextServerConfig)
 				
-				sNewReward = drive.getResponse(restAPI, drive.getConfig(restAPI, sNew))
+				sNewReward = drive.getResponse(drive.getConfig(sNew))
 				if (sReward > sNewReward)
 				{
 					probability = 1
@@ -56,7 +59,7 @@ component provides SimulatedAnnealing requires webDriver drive, io.Output out, d
 				}
 			}
 			
-			return drive.getConfig(restAPI, sCurrent)
+			return drive.getConfig(sCurrent)
 		}
 	
 	

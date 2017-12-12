@@ -1,0 +1,9 @@
+uses pal.control.RestAPI
+
+interface KnowledgeBase{
+
+	KnowledgeBase(RestAPI restapi)
+	bool inKnowledgeBase(char config[])
+	int testNewConfig(char config[])
+
+}
