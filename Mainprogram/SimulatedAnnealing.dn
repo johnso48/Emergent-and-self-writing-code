@@ -5,9 +5,11 @@ uses Knowledge.KnowledgeBase
 component provides SimulatedAnnealing requires webDriver , io.Output out, data.IntUtil iu, util.RandomInt ri, time.DateUtil du, time.Calendar cal, util.Math math, data.StringUtil stringUtil{
 
 	webDriver drive
+	KnowledgeBase knowledge
 	char[] SimulatedAnnealing:call(RestAPI restAPI, int maxSteps, interfaceLevels interfaces[], KnowledgeBase kb)
 		{
 			drive = new webDriver(restAPI)
+			knowledge = kb
 			String empty[] = new String[1]
 			empty[0] = new String("")
 			String sCurrent[] = getConfigParts(interfaces[0].componentNames[0].string, interfaces[0].interfaceName, interfaces, empty)
@@ -32,9 +34,9 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 				
 				nextServerConfig = drive.getConfig(sCurrent)
 				out.println(nextServerConfig)
-				sReward = drive.getResponse(nextServerConfig)
+				sReward = knowledge.testNewConfig(nextServerConfig)
 				
-				sNewReward = drive.getResponse(drive.getConfig(sNew))
+				sNewReward = knowledge.testNewConfig(drive.getConfig(sNew))
 				if (sReward > sNewReward)
 				{
 					probability = 1
@@ -45,6 +47,9 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 						if (sReward > sNewReward)
 						{
 							probability = 1
+						}else
+						{
+							probability = 0
 						}
 					}else
 					{
@@ -53,7 +58,7 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 				}
 				randomNum = ri.get(1000)/1000
 				
-				if (probability <= randomNum)
+				if (probability >= randomNum)
 				{
 					sCurrent = sNew
 				}
@@ -72,7 +77,7 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 		
 	dec getProbability(dec newNode, dec currentNode, dec t)
 		{
-			dec calculations = ((-(newNode - currentNode))/t)
+			dec calculations = (((newNode - currentNode))/t)
 			calculations = math.natexp(calculations)
 			return calculations
 		}
@@ -176,6 +181,11 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 			{
 				newConfig[j].string = nextConfigParts[i].string
 				j++
+			}
+			
+			if (knowledge.inKnowledgeBase(drive.getConfig(newConfig)))
+			{
+				newConfig = getNeighbour(interfaces, currentConfig)
 			}
 			
 			return newConfig

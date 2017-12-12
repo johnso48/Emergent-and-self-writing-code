@@ -37,7 +37,7 @@ component provides KnowledgeBase requires io.Output out, webDriver{
 				{
 					newStoredConfigs[i] = new String("")
 					newStoredConfigs[i].string = storedConfigs[i].string
-					out.println(storedConfigs[i].string)
+					
 					newConfigRewards[i] = configRewards[i]
 				}
 				newStoredConfigs[newStoredConfigs.arrayLength - 1] = new String("")
