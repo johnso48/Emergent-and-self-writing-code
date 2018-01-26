@@ -93,6 +93,20 @@ component provides webDriver requires data.IntUtil iu, time.Timer timer, net.htt
 			
 			return "Error"
 		}
+	String[] webDriver:getServerWork()
+		{
+			HTTPResponse r = request.get("http://$DEFAULT_SERVER_IP:$(iu.intToString(DEFAULT_SERVER_PORT))/meta/get_perception", null)
+			char webResponse[] = r.content
+			String workLoadNames[] = jsonr.getWorkload(webResponse)
+			char workLoadCombined[] = stringUtil.implode(workLoadNames, ",")
+			String averageWorkloadSize[] = jsonr.getAverageSize(webResponse)
+			char averageWorkloadSizeCombined[] = stringUtil.implode(averageWorkloadSize, ",")
+			String output[] = new String[2]
+			output[0] = new String(workLoadCombined)
+			output[1] = new String(averageWorkloadSizeCombined)
+			return output
+		}
+	
 	
 	
 }
