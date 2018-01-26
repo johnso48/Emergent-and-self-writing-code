@@ -1,13 +1,5 @@
 uses pal.control.RestAPI
 
-
-data knowledge{
-	int rewardValue
-	char config[]
-	char workLoad[]
-	int averageSize
-}
-
 interface KnowledgeBase{
 
 	KnowledgeBase(RestAPI restapi)

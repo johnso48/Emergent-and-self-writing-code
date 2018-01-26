@@ -1,64 +1,22 @@
-const char knowledgeFile[] = "knowledge.txt"
+component provides KnowledgeBase requires io.Output out, webDriver{
 
-component provides KnowledgeBase requires io.Output out, webDriver, time.Timer timer, data.IntUtil iu, io.File, io.TextFile, data.StringUtil su{
-
-	
-	knowledge learnedKnowledge[]
+	String storedConfigs[]
+	int configRewards[]
 	webDriver drive
-	static bool continue
-	static char currentWorkLoad[]
-	static int averageSize
+	
+	
 	KnowledgeBase:KnowledgeBase(RestAPI restAPI)
 	{
-		continue = true
 		drive = new webDriver(restAPI)
-		int numOfEntries = 0
-		TextFile fd = new TextFile(knowledgeFile, File.FILE_ACCESS_READ)
-		while(!fd.eof())
-		{
-			fd.readLine()
-			numOfEntries++
-		}
-		learnedKnowledge = new knowledge[numOfEntries]
-		fd.setPos(0)
-		int j = 0
-		for (int i = 0; i < learnedKnowledge.arrayLength; i++)
-		{
-			j++
-			out.print(iu.intToString(j))
-			out.print(" ")
-			char knownKnowledge[] = fd.readLine()
-			String knowledgeParts[] = su.explode(knownKnowledge, "<>")
-			out.println(iu.intToString(knowledgeParts.arrayLength))
-			learnedKnowledge[i] = new knowledge()
-			learnedKnowledge[i].rewardValue = iu.intFromString(knowledgeParts[0].string)
-			learnedKnowledge[i].config = knowledgeParts[1].string
-			learnedKnowledge[i].workLoad = knowledgeParts[2].string
-			learnedKnowledge[i].averageSize = iu.intFromString(knowledgeParts[3].string)
-		}
-		fd.close()	
-		
-		
-		asynch::getWorkload()
-		
-		
-		
-		
 	}
 	
 	bool KnowledgeBase:inKnowledgeBase(char config[])
 		{
-			for (int i = 0; i < learnedKnowledge.arrayLength; i++)
+			for (int i = 0; i < storedConfigs.arrayLength; i++)
 			{
-				if (config == learnedKnowledge[i].config)
+				if (config == storedConfigs[i].string)
 				{
-					if(currentWorkLoad == learnedKnowledge[i].workLoad)
-					{
-						if(averageSize == learnedKnowledge[i].averageSize)
-						{
-							return true
-						}
-					}	
+					return true
 				}
 			}
 			return false
@@ -73,34 +31,23 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 				return rewardValue
 			}else
 			{
-				continue = false
-				knowledge newKnowledge[] = new knowledge[learnedKnowledge.arrayLength + 1]
-				
-				for (int i = 0; i < learnedKnowledge.arrayLength; i++)
+				String newStoredConfigs[] = new String[storedConfigs.arrayLength + 1]
+				int newConfigRewards[] = new int[configRewards.arrayLength + 1]
+				for (int i = 0; i < storedConfigs.arrayLength; i++)
 				{
-					newKnowledge[i] = new knowledge()
-					newKnowledge[i].config = learnedKnowledge[i].config
-					newKnowledge[i].rewardValue = learnedKnowledge[i].rewardValue
-					newKnowledge[i].workLoad = learnedKnowledge[i].workLoad
-					newKnowledge[i].averageSize = learnedKnowledge[i].averageSize
+					newStoredConfigs[i] = new String("")
+					newStoredConfigs[i].string = storedConfigs[i].string
+					out.println(storedConfigs[i].string)
+					newConfigRewards[i] = configRewards[i]
 				}
-				newKnowledge[newKnowledge.arrayLength - 1] = new knowledge()
+				newStoredConfigs[newStoredConfigs.arrayLength - 1] = new String("")
 				int configRewardValue = drive.getResponse(config)
-				newKnowledge[newKnowledge.arrayLength - 1].rewardValue = configRewardValue
-				newKnowledge[newKnowledge.arrayLength - 1].config = config
-				newKnowledge[newKnowledge.arrayLength - 1].workLoad = currentWorkLoad
-				newKnowledge[newKnowledge.arrayLength - 1].averageSize = averageSize
+				newStoredConfigs[newStoredConfigs.arrayLength - 1].string = config
+				newConfigRewards[newConfigRewards.arrayLength - 1] = configRewardValue
 				
-				char outputToFile[] = new char[](iu.intToString(configRewardValue), "<>", config, "<>", currentWorkLoad, "<>", iu.intToString(averageSize), "\n")
+				storedConfigs = newStoredConfigs
+				configRewards = newConfigRewards
 				
-				
-				File fd = new File(knowledgeFile, File.FILE_ACCESS_WRITE)
-				fd.setPos(fd.getSize())
-				fd.write(outputToFile)
-				fd.close()
-				
-				learnedKnowledge = newKnowledge
-				continue = true
 				return configRewardValue
 			}
 
@@ -110,34 +57,13 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 		
 	int getRewardValue(char config[])
 		{
-			for (int i = 0; i < learnedKnowledge.arrayLength; i++)
+			for (int i = 0; i < storedConfigs.arrayLength; i++)
 			{
-				if (config == learnedKnowledge[i].config)
+				if (config == storedConfigs[i].string)
 				{
-					if(currentWorkLoad == learnedKnowledge[i].workLoad)
-					{
-						if(averageSize == learnedKnowledge[i].averageSize)
-						{
-							return learnedKnowledge[i].rewardValue
-						}
-					}	
+					return i
 				}
 			}
 			return 0
-		}
-	
-	void getWorkload()
-		{
-			while(true)
-			{
-				timer.sleep(2000)
-				if (continue)
-				{
-					String workLoadsAndSize[] = drive.getServerWork()
-					currentWorkLoad = workLoadsAndSize[0].string
-					averageSize = iu.intFromString(workLoadsAndSize[1].string)
-				}
-				
-			}
 		}
 }

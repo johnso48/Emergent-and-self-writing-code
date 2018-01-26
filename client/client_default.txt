@@ -1,7 +1,1 @@
-/minion.png
 /
-/samplePDF.pdf
-/samplePDF.pdf
-/
-/samplePDF.pdf
-/minion.png

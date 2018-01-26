@@ -32,9 +32,9 @@ component provides SimulatedAnnealing requires webDriver , io.Output out, data.I
 				
 				nextServerConfig = drive.getConfig(sCurrent)
 				out.println(nextServerConfig)
-				sReward = kb.testNewConfig(nextServerConfig)
+				sReward = drive.getResponse(nextServerConfig)
 				
-				sNewReward = kb.testNewConfig(drive.getConfig(sNew))
+				sNewReward = drive.getResponse(drive.getConfig(sNew))
 				if (sReward > sNewReward)
 				{
 					probability = 1
