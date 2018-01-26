@@ -4,5 +4,6 @@ interface webDriver{
 	
 	webDriver(RestAPI restapi)
 	int getResponse(char config[])
-	char[] getConfig(String configParts[])	
+	char[] getConfig(String configParts[])
+	String[] getServerWork()
 }

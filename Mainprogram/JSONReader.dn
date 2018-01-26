@@ -1,18 +1,68 @@
 component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil iu, io.Output out{
 
 	int JSONReader:getReward(char webResponse[])
-	{
-		JSONElement jsonResponse = jsonp.parseDocument(webResponse)
-		jsonResponse = jsonp.getValue(jsonResponse, "metrics")
-		jsonResponse = jsonResponse.children[0]
-		jsonResponse = jsonResponse.children[2]
+		{
+			JSONElement jsonResponse = jsonp.parseDocument(webResponse)
+			jsonResponse = jsonp.getValue(jsonResponse, "metrics")
+			jsonResponse = jsonResponse.children[0]
+			JSONElement value = jsonResponse.children[3]
+			jsonResponse = jsonResponse.children[2]
+			
+			
+			
+			
+			int reward = (iu.intFromString(jsonResponse.value)/iu.intFromString(value.value))
+			
+			
+			return reward
+		}
+	
+	String[] JSONReader:getWorkload(char webResponse[])
+		{
+			JSONElement jsonResponse = jsonp.parseDocument(webResponse)
+			jsonResponse = jsonp.getValue(jsonResponse, "events")
+			
+			String workLoads[] = new String[jsonResponse.children.arrayLength]
+			for (int i = 0; i < jsonResponse.children.arrayLength; i++)
+			{
+				workLoads[i] = new String("")
+			}
+			
+			
+			
+			for (int i = 0; i < jsonResponse.children.arrayLength; i++)
+			{
+				JSONElement subJsonResponse = jsonResponse.children[i]
+				subJsonResponse = subJsonResponse.children[0]
+				char workLoad[] = subJsonResponse.value
+				workLoads[i].string = workLoad 
+			}
+			
+			
+			return workLoads
+		}
 		
-		
-		
-		
-		int reward = iu.intFromString(jsonResponse.value)
-		
-		
-		return reward
-	}
+	String[] JSONReader:getAverageSize(char webResponse[])
+		{
+			JSONElement jsonResponse = jsonp.parseDocument(webResponse)
+			jsonResponse = jsonp.getValue(jsonResponse, "events")
+			String output[] = new String[jsonResponse.children.arrayLength]
+			for (int i = 0; i < jsonResponse.children.arrayLength; i++)
+			{
+				output[i] = new String("")
+			}
+			
+			for (int i = 0; i < jsonResponse.children.arrayLength; i++)
+			{
+				JSONElement subJsonResponse = jsonResponse.children[i]
+				JSONElement value = subJsonResponse.children[2]
+				JSONElement count = subJsonResponse.children[3]
+				
+				int intValue = iu.intFromString(value.value)
+				int intCount = iu.intFromString(count.value)
+				
+				output[i].string = iu.intToString(intValue/intCount)
+			}
+			return output
+		}
 }

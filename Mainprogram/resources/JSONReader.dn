@@ -1,4 +1,8 @@
+
+uses data.String
 interface JSONReader{
 
 	int getReward(char webResponse[])
+	String[] getWorkload(char webResponse[])
+	String[] getAverageSize(char webResponse[])
 }
