@@ -2,8 +2,8 @@ const char SERVER_ADDRESS[] = "localhost"
 const int SERVER_PORT = 8080
 
 const int RECV_BUF_SIZE = 512
-
-component provides App requires io.TextFile, net.TCPSocket, io.Output out, time.Calendar calendar, time.DateUtil dateUtil, time.Timer timer, data.DecUtil du, data.IntUtil iu {
+uses data.String
+component provides App requires io.TextFile, net.TCPSocket, io.Output out, time.Calendar calendar, time.DateUtil dateUtil, time.Timer timer, data.DecUtil du, data.IntUtil iu, util.RandomInt ri, io.File {
 	
 	int totalTime
 	int resourceCount
@@ -25,7 +25,10 @@ component provides App requires io.TextFile, net.TCPSocket, io.Output out, time.
 				totalTime = 0
 				resourceCount = 0
 				}
-			
+			File fd = new File("AverageResponse.txt", File.FILE_ACCESS_WRITE)
+			fd.setPos(fd.getSize())
+			fd.write(new char[](du.decToString(avg), "\n"))
+			fd.close()
 			out.println("average response time: $(du.decToString(avg))ms")
 			
 			timer.sleep(1000)
@@ -66,34 +69,36 @@ component provides App requires io.TextFile, net.TCPSocket, io.Output out, time.
 	
 	int App:main(AppParam params[])
 		{
-		char path[]
 		
-		if (params.arrayLength == 1)
-			path = params[0].string
-			else
-			path = "client_default.txt"
 		
-		TextFile fd = new TextFile(path, File.FILE_ACCESS_READ)
-		
-		if (fd != null)
+		String files[]
+		files = new String[8]
+		for (int i = 0; i < files.arrayLength; i++)
+		{
+			files[i] = new String()
+		}
+		files[0].string = "/image-large.jpg"
+		files[1].string = "/image-small.jpg"
+		files[2].string = "/index.html"
+		files[3].string = "/large.html"
+		files[4].string = "/js-big.js"
+		files[5].string = "/js-small.js"
+		files[6].string = "/pdf-large.pdf"
+		files[7].string = "/pdf-small.pdf"
+		ri.setSeed(8080)
+		asynch::statThread()
+		int randomNum
+		//read each line of the file as one resource to request
+		// - at the end of the file we loop back to the start
+		while (true)
 			{
-			asynch::statThread()
-			
-			//read each line of the file as one resource to request
-			// - at the end of the file we loop back to the start
-			while (true)
-				{
-				while (!fd.eof())
-					{
-					char resource[] = fd.readLine()
-					request(resource)
-					}
-				
-				fd.setPos(0)
-				}
-			
-			fd.close()
+
+				randomNum = ri.get(8)
+				out.println(new char[]("Getting file: ", files[randomNum].string))
+				request(files[randomNum].string)
 			}
+		
+		
 		
 		return 0
 		}

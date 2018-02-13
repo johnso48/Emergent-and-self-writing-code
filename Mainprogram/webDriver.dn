@@ -1,5 +1,5 @@
-const int ITERATION_COUNT = 3
-const int STAT_INTERVAL = 5000
+const int ITERATION_COUNT = 1
+const int STAT_INTERVAL = 3000
 
 const char DEFAULT_SERVER_IP[] = "localhost"
 const int DEFAULT_SERVER_PORT = 8008
@@ -14,10 +14,10 @@ component provides webDriver requires data.IntUtil iu, time.Timer timer, net.htt
 			restAPI = restapi
 		}
 	
-	int webDriver:getResponse(char config[])
+	dec webDriver:getResponse(char config[])
 		{
 			int response
-			int averageResponse = 0
+			dec averageResponse = 0
 		
 			restAPI.setConfig(config)
 			

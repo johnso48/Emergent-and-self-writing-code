@@ -14,8 +14,8 @@ component provides hillClimbing requires webDriver, io.Output out, data.IntUtil 
 			drive = new webDriver(restAPI)
 			String componentNames[] = interfaces[0].componentNames
 			String interfaceRequirements[] = interfaces[0].requirements
-			int currentReward = 999999999999999999999
-			int nextReward
+			dec currentReward = 999999999999999999999.0
+			dec nextReward
 			String bestComponents[] = new String[interfaces.arrayLength]
 			String nextInterfaces[] = new String[interfaces.arrayLength]
 			for (int i = 0; i < nextInterfaces.arrayLength; i++)

@@ -1,13 +1,13 @@
 const char knowledgeFile[] = "knowledge.txt"
 
-component provides KnowledgeBase requires io.Output out, webDriver, time.Timer timer, data.IntUtil iu, io.File, io.TextFile, data.StringUtil su{
+component provides KnowledgeBase requires io.Output out, webDriver, time.Timer timer, data.IntUtil iu, io.File, io.TextFile, data.StringUtil su, data.DecUtil du{
 
 	
 	knowledge learnedKnowledge[]
 	webDriver drive
 	static bool continue
 	static char currentWorkLoad[]
-	static int averageSize
+	static dec averageSize
 	KnowledgeBase:KnowledgeBase(RestAPI restAPI)
 	{
 		continue = true
@@ -64,10 +64,10 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 			return false
 		}
 		
-	int KnowledgeBase:testNewConfig(char config[])
+	dec KnowledgeBase:testNewConfig(char config[])
 		{
-			int rewardValue = getRewardValue(config)
-			if (rewardValue != 0)
+			dec rewardValue = getRewardValue(config)
+			if (rewardValue != 0.0)
 			{
 				out.println("Test")
 				return rewardValue
@@ -85,13 +85,13 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 					newKnowledge[i].averageSize = learnedKnowledge[i].averageSize
 				}
 				newKnowledge[newKnowledge.arrayLength - 1] = new knowledge()
-				int configRewardValue = drive.getResponse(config)
+				dec configRewardValue = drive.getResponse(config)
 				newKnowledge[newKnowledge.arrayLength - 1].rewardValue = configRewardValue
 				newKnowledge[newKnowledge.arrayLength - 1].config = config
 				newKnowledge[newKnowledge.arrayLength - 1].workLoad = currentWorkLoad
 				newKnowledge[newKnowledge.arrayLength - 1].averageSize = averageSize
 				
-				char outputToFile[] = new char[](iu.intToString(configRewardValue), "<>", config, "<>", currentWorkLoad, "<>", iu.intToString(averageSize), "\n")
+				char outputToFile[] = new char[](du.decToString(configRewardValue), "<>", config, "<>", currentWorkLoad, "<>", du.decToString(averageSize), "\n")
 				
 				
 				File fd = new File(knowledgeFile, File.FILE_ACCESS_WRITE)
@@ -104,11 +104,11 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 				return configRewardValue
 			}
 
-			return 0
+			return 999999.0
 		}
 		
 		
-	int getRewardValue(char config[])
+	dec getRewardValue(char config[])
 		{
 			for (int i = 0; i < learnedKnowledge.arrayLength; i++)
 			{
@@ -123,7 +123,7 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 					}	
 				}
 			}
-			return 0
+			return 0.0
 		}
 	
 	void getWorkload()

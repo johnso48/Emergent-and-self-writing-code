@@ -2,16 +2,16 @@ uses pal.control.RestAPI
 
 
 data knowledge{
-	int rewardValue
+	dec rewardValue
 	char config[]
 	char workLoad[]
-	int averageSize
+	dec averageSize
 }
 
 interface KnowledgeBase{
 
 	KnowledgeBase(RestAPI restapi)
 	bool inKnowledgeBase(char config[])
-	int testNewConfig(char config[])
+	dec testNewConfig(char config[])
 
 }

@@ -1,6 +1,6 @@
-component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil iu, io.Output out{
+component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil iu, io.Output out, data.DecUtil du{
 
-	int JSONReader:getReward(char webResponse[])
+	dec JSONReader:getReward(char webResponse[])
 		{
 			JSONElement jsonResponse = jsonp.parseDocument(webResponse)
 			jsonResponse = jsonp.getValue(jsonResponse, "metrics")
@@ -11,7 +11,7 @@ component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil 
 			
 			
 			
-			int reward = (iu.intFromString(jsonResponse.value)/iu.intFromString(value.value))
+			dec reward = (iu.intFromString(jsonResponse.value)/iu.intFromString(value.value))
 			
 			
 			return reward
@@ -58,10 +58,10 @@ component provides JSONReader requires data.json.JSONParser jsonp, data.IntUtil 
 				JSONElement value = subJsonResponse.children[2]
 				JSONElement count = subJsonResponse.children[3]
 				
-				int intValue = iu.intFromString(value.value)
-				int intCount = iu.intFromString(count.value)
+				dec intValue = du.decFromString(value.value)
+				dec intCount = du.decFromString(count.value)
 				
-				output[i].string = iu.intToString(intValue/intCount)
+				output[i].string = du.decToString(intValue/intCount)
 			}
 			return output
 		}

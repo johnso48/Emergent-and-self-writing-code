@@ -49,28 +49,259 @@ component provides GeneticAlgorithm requires webDriver, io.Output out, data.IntU
 			}
 		}
 		
-		char bestConfig[] = breed(child[firstBestIndex], child[secondBestIndex])
+		char bestConfig[] = breed(child[firstBestIndex], child[secondBestIndex], interfaces)
 		
 		
 		return null
 	}
 	
-	char[] breed (Children parent1, Children parent2)
+	char[] breed (Children parent1, Children parent2, interfaceLevels interfaces[])
 	{
+	
+		out.println("Best config")
+		out.println(stringUtil.implode(parent1.config, ","))
+		out.println("Second config")
+		out.println(stringUtil.implode(parent2.config, ","))
+		out.println("Child Configs")
 		Children child[] = new Children[5]
 		int randomNum
+		String buffer[]
+		String newBuffer[]
+		String testedInterfaces[]
+		
 		for (int i = 0; i< 5; i++)
 		{
+			testedInterfaces = new String[0]
+			child[i] = new Children()
 			char newConfig[]
 			randomNum = ri.get(2)
 			if (randomNum == 0){
-				newConfig = parent1.config[0].string
-				out.println(newConfig)
+				child[i].config = new String[](parent1.config[0])
+				
+				for (int j = 0; j < interfaces.arrayLength; j++)
+				{
+					for (int k = 0; k < interfaces[j].componentNames.arrayLength; k++)
+					{
+						if (interfaces[j].componentNames[k].string == parent1.config[0].string)
+						{
+							buffer = new String[](stringUtil.explode(interfaces[j].requirements[k].string, ","))
+						}
+					}
+				}
 			}else
 			{
-				newConfig = parent2.config[0].string
-				out.println(newConfig)
+				child[i].config = new String[](parent2.config[0])
+				
+				for (int j = 0; j < interfaces.arrayLength; j++)
+				{
+					for (int k = 0; k < interfaces[j].componentNames.arrayLength; k++)
+					{
+						if (interfaces[j].componentNames[k].string == parent2.config[0].string)
+						{
+							buffer = new String[](stringUtil.explode(interfaces[j].requirements[k].string, ","))
+						}
+					}
+				}
 			}
+			while (1)
+			{
+				newBuffer = new String[0]
+				char test[]
+				for (int j = 0; j < buffer.arrayLength; j++)
+				{
+					bool tested = false
+					for (int n = 0; n < testedInterfaces.arrayLength; n++)
+					{
+						if (testedInterfaces[n].string == buffer[j].string)
+						{
+							tested = true
+						}
+					}
+					if (!tested)
+					{
+						String newInterface = new String(buffer[j].string)
+						testedInterfaces = new String[](testedInterfaces, newInterface)
+						char parentComp1[] = ""
+						char parentComp2[] = ""
+						
+						for (int k = 0; k < interfaces.arrayLength; k++)
+						{
+							if (buffer[j].string == interfaces[k].interfaceName)
+							{
+								for (int l = 0; l < interfaces[k].componentNames.arrayLength; l++)
+								{
+									for (int m = 0; m < parent1.config.arrayLength; m++)
+									{
+										if (interfaces[k].componentNames[l].string == parent1.config[m].string)
+										{
+											test = interfaces[k].interfaceName
+											parentComp1 = parent1.config[m].string
+										}
+									}
+									for (int m = 0; m < parent2.config.arrayLength; m++)
+									{
+										if (interfaces[k].componentNames[l].string == parent2.config[m].string)
+										{
+											test = interfaces[k].interfaceName
+											parentComp2 = parent2.config[m].string
+										}
+									}
+								}
+							}
+						}
+						
+						if (parentComp1 == "" && parentComp2 == "")
+						{
+							for (int k =0; k < interfaces.arrayLength; k++)
+							{
+								if (buffer[j].string == interfaces[k].interfaceName)
+								{
+									randomNum = ri.get(interfaces[k].componentNames.arrayLength)
+									child[i].config = new String[](child[i].config, interfaces[k].componentNames[randomNum])
+									
+								}
+							}
+						}else if (parentComp1 == "")
+						{
+							String newGene = new String(parentComp2)
+							child[i].config = new String[](child[i].config, newGene)
+						}else if (parentComp2 == "")
+						{
+							String newGene = new String(parentComp1)
+							child[i].config = new String[](child[i].config, newGene)
+						}else 
+						{
+							randomNum = ri.get(100)							//random number from 0 to 99
+							if (randomNum <= 44) 
+							{
+								String newGene = new String(parentComp1)
+								child[i].config = new String[](child[i].config, newGene)
+								for (int k = 0; k < interfaces.arrayLength; k++)
+								{
+									if (buffer[j].string == interfaces[k].interfaceName)
+									{
+										for (int l = 0; l < interfaces[k].componentNames.arrayLength; l++)
+										{
+											if (interfaces[k].componentNames[l].string == parentComp1)
+											{
+												String requirements[] = stringUtil.explode(interfaces[k].requirements[l].string, ",")
+												
+												for (int m = 0; m < requirements.arrayLength; m++)
+												{	
+													tested = false
+													for (int n = 0; n < testedInterfaces.arrayLength; n++)
+													{
+														if (testedInterfaces[n].string == requirements[m].string)
+														{
+															tested = true
+														}
+													}
+													if (!tested)
+													{
+														newBuffer = new String[](newBuffer, new String(requirements[m].string))
+													}
+													
+													
+												}
+											}
+										}
+									}
+								}
+							}else if (randomNum >= 55)
+							{
+								String newGene = new String(parentComp2)
+								child[i].config = new String[](child[i].config, newGene)
+								for (int k = 0; k < interfaces.arrayLength; k++)
+								{
+									if (buffer[j].string == interfaces[k].interfaceName)
+									{
+										for (int l = 0; l < interfaces[k].componentNames.arrayLength; l++)
+										{
+											if (interfaces[k].componentNames[l].string == parentComp2)
+											{
+												String requirements[] = stringUtil.explode(interfaces[k].requirements[l].string, ",")
+												
+												for (int m = 0; m < requirements.arrayLength; m++)
+												{	
+													tested = false
+													for (int n = 0; n < testedInterfaces.arrayLength; n++)
+													{
+														if (testedInterfaces[n].string == requirements[m].string)
+														{
+															tested = true
+														}
+													}
+													if (!tested)
+													{
+														newBuffer = new String[](newBuffer, new String(requirements[m].string))
+													}
+												}
+											}
+										}
+									}
+								}
+							}else{
+								for (int k =0; k < interfaces.arrayLength; k++)
+								{
+									if (buffer[j].string == interfaces[k].interfaceName)
+									{
+										randomNum = ri.get(interfaces[k].componentNames.arrayLength)
+										child[i].config = new String[](child[i].config, interfaces[k].componentNames[randomNum])
+									}
+								}
+								for (int k = 0; k < interfaces.arrayLength; k++)
+								{
+									if (buffer[j].string == interfaces[k].interfaceName)
+									{
+										for (int l = 0; l < interfaces[k].componentNames.arrayLength; l++)
+										{
+											if (interfaces[k].componentNames[l].string == parentComp2)
+											{
+												String requirements[] = stringUtil.explode(interfaces[k].requirements[l].string, ",")
+												
+												for (int m = 0; m < requirements.arrayLength; m++)
+												{	
+													tested = false
+													for (int n = 0; n < testedInterfaces.arrayLength; n++)
+													{
+														if (testedInterfaces[n].string == requirements[m].string)
+														{
+															tested = true
+														}
+													}
+													if (!tested)
+													{
+														newBuffer = new String[](newBuffer, new String(requirements[m].string))
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				buffer = newBuffer
+				
+				bool continue = false
+				for (int j = 0; j < buffer.arrayLength; j++)
+				{
+					if (buffer[j].string != "-")
+					{
+						continue = true
+					}
+				}	
+				
+				if (!continue)
+				{
+					break
+				}
+			}
+			
+			out.println(stringUtil.implode(child[i].config, ", "))
+			
 			
 		}
 		return null
