@@ -14,8 +14,10 @@ component provides GeneticAlgorithm requires webDriver, io.Output out, data.IntU
 	int secondBest
 	int firstBestIndex
 	int secondBestIndex
-	char[] GeneticAlgorithm:call(RestAPI restAPI, interfaceLevels interfaces[], KnowledgeBase kb)
+	KnowledgeBase kb
+	char[] GeneticAlgorithm:call(RestAPI restAPI, interfaceLevels interfaces[], KnowledgeBase kb2)
 	{
+		kb = kb2
 		firstBest = 99999999999
 		firstBestIndex = 0
 		secondBest = 99999999999
@@ -299,11 +301,27 @@ component provides GeneticAlgorithm requires webDriver, io.Output out, data.IntU
 					break
 				}
 			}
+
+			child[i].fitness = kb.testNewConfig(drive.getConfig(child[i].config))
+			if (child[i].fitness < firstBest)
+			{
+				secondBest = firstBest
+				secondBestIndex = firstBestIndex
+				firstBest = child[i].fitness
+				firstBestIndex = i	
+			}else{
+				if (child[i].fitness < secondBest)
+				secondBest = child[i].fitness
+				secondBestIndex = i
+			}
+		
+		
 			
 			out.println(stringUtil.implode(child[i].config, ", "))
 			
 			
 		}
+		char bestConfig[] = breed(child[firstBestIndex], child[secondBestIndex], interfaces)
 		return null
 	}
 	

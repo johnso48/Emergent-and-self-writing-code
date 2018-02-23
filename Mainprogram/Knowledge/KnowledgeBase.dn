@@ -116,7 +116,9 @@ component provides KnowledgeBase requires io.Output out, webDriver, time.Timer t
 				{
 					if(currentWorkLoad == learnedKnowledge[i].workLoad)
 					{
-						if(averageSize == learnedKnowledge[i].averageSize)
+						dec test = learnedKnowledge[i].averageSize * 1.1
+						dec test2 = learnedKnowledge[i].averageSize * 0.9
+						if(averageSize <= test && averageSize >= test2)
 						{
 							return learnedKnowledge[i].rewardValue
 						}
